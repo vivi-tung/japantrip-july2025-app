@@ -1,410 +1,686 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-  <title>🌸 東京粉色旅途 · 行程記帳</title>
-  <!-- Tailwind via CDN + 粉色日系基調 -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>✨ 東京推活之旅</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Vue 3 -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <!-- Font Awesome 6 (免費 icons) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 日系可愛粉彩 & 卡片細節 */
-    body {
-      background: #fef6f0;  /* 柔和奶油粉 */
-      font-family: 'Segoe UI', 'Helvetica Neue', system-ui, -apple-system, sans-serif;
-    }
-    .card-pink {
-      background: rgba(255, 245, 240, 0.7);
-      backdrop-filter: blur(2px);
-      border: 1px solid #ffdbd0;
-      border-radius: 28px;
-      box-shadow: 0 12px 28px -8px rgba(230, 140, 120, 0.18);
-    }
-    .btn-soft-pink {
-      background: #ffd9cc;
-      color: #5f3e3a;
-      border-radius: 40px;
-      padding: 10px 20px;
+    @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    * { font-family: 'Kosugi Maru', 'Noto Sans TC', sans-serif; }
+    body { background: #fdf0f2; color: #4d3a35; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
+    .cute-card { background: rgba(255,255,255,0.92); backdrop-filter: blur(4px); border: 2px solid #ffd9de; border-radius: 28px; box-shadow: 0 12px 28px -8px rgba(230,140,120,0.15); }
+    .tab-active { background: #f7b0a0; color: white; box-shadow: 0 6px 14px rgba(247,176,160,0.35); transform: scale(1.02); }
+    .day-btn-active { background: #f7b0a0 !important; color: white !important; border-color: #f7b0a0 !important; box-shadow: 0 4px 12px rgba(247,176,160,0.3); }
+    .day-btn-active .text-gray-400 { color: white !important; }
+    .day-btn-active .text-gray-600 { color: white !important; }
+    /* 移除原本的 deadline-text 样式，改为纯文字提醒 */
+    .deadline-plain {
+      font-size: 0.7rem; /* text-xs 相近 */
+      color: #b87370; /* 柔和暖色，符合风格 */
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
       font-weight: 500;
-      transition: all 0.2s;
-      border: none;
-      box-shadow: 0 4px 8px rgba(235, 150, 130, 0.1);
+      letter-spacing: 0.01em;
     }
-    .btn-soft-pink:hover {
-      background: #ffcdbc;
-      transform: scale(0.97);
-    }
-    .btn-soft-pink.active {
-      background: #f7b8a3;
-      color: white;
-      box-shadow: 0 6px 12px rgba(210, 120, 100, 0.25);
-    }
-    .tag-pink {
-      background: #ffe2d9;
-      color: #754b42;
-      border-radius: 30px;
-      padding: 4px 16px;
-      font-size: 0.8rem;
-    }
-    .divider-pink {
-      border-top: 2px dashed #fad4c8;
-      opacity: 0.6;
-      margin: 1rem 0;
-    }
-    .map-link {
-      color: #b45f4a;
-      text-decoration: none;
-      border-bottom: 1px dotted #eccac0;
-    }
-    .map-link i {
-      margin-right: 4px;
-    }
-    .strikethrough-done {
-      text-decoration: line-through;
-      opacity: 0.6;
-    }
-    /* 手機版面內距 */
-    .app-container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 16px 12px 80px;
-    }
-    /* 記帳卡片內數字 */
-    .currency-badge {
-      background: #fae3db;
-      border-radius: 30px;
-      padding: 2px 14px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: #6a3f37;
-    }
+    .reservation-btn { background: #fce4ec; border: 1px solid #f8bbd0; color: #ad1457; padding: 4px 14px; border-radius: 16px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+    .reservation-btn:hover { background: #f8bbd0; }
+    .reservation-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .reservation-modal-content { background: white; border-radius: 28px; max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
+    .reservation-modal-content img { width: 100%; border-radius: 16px; margin-top: 8px; }
+    .close-btn { position: sticky; top: 0; float: right; background: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10; }
   </style>
 </head>
 <body>
-  <div id="app" class="app-container">
-    <!-- 可愛標題 -->
-    <div class="flex items-center justify-between mb-4 pt-2">
-      <h1 class="text-2xl font-bold text-[#5c3e39] tracking-wide flex items-center gap-2">
-        <i class="fas fa-cherry-blossom text-[#f7a48c]"></i> 粉色旅途
-      </h1>
-      <span class="text-sm text-[#b17a6b] bg-white/60 px-4 py-1.5 rounded-full shadow-sm border border-[#fad4c8]">
-        <i class="far fa-calendar-alt mr-1"></i> 2026 · 夏
-      </span>
+
+  <!-- 頂部導航 -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b-2 border-[#ffd9de] px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">✨</span>
+      <div>
+        <h1 class="text-md font-bold text-[#e48070]">東京推活之旅</h1>
+        <p class="text-[10px] text-gray-400">Vivian & Suzu 專屬 💖</p>
+      </div>
+    </div>
+    <div class="bg-[#fdf0f2] text-[#e48070] text-xs px-4 py-1.5 rounded-full font-bold border border-[#ffd9de]">推活指南</div>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 mt-4 space-y-6">
+
+    <!-- 分頁 -->
+    <div class="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-2xl border border-[#ffd9de] shadow-sm">
+      <button onclick="switchTab('itinerary')" id="tab-itinerary" class="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5">
+        <i data-lucide="calendar" class="w-4 h-4"></i><span>行程表</span>
+      </button>
+      <button onclick="switchTab('billing')" id="tab-billing" class="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 text-gray-500 hover:bg-[#fdf0f2] flex flex-col items-center justify-center gap-0.5">
+        <i data-lucide="wallet" class="w-4 h-4"></i><span>多人記帳</span>
+      </button>
+      <button onclick="switchTab('rate')" id="tab-rate" class="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 text-gray-500 hover:bg-[#fdf0f2] flex flex-col items-center justify-center gap-0.5">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i><span>匯率轉換</span>
+      </button>
     </div>
 
-    <!-- 1. 行程表：每日按鈕收納 -->
-    <section class="card-pink p-4 mb-5">
-      <div class="flex items-center gap-3 mb-3">
-        <i class="fas fa-route text-[#c48372] text-xl"></i>
-        <h2 class="text-lg font-semibold text-[#5c3e39]">🗓️ 行程收納</h2>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <button 
-          v-for="(day, idx) in days" 
-          :key="idx"
-          @click="toggleDay(idx)"
-          class="btn-soft-pink text-sm px-4 py-2 flex-1 min-w-[70px]"
-          :class="{ active: day.open }"
-        >
-          <i class="fas fa-chevron-down text-[10px] mr-1" :class="{'rotate-180': day.open}"></i>
-          {{ day.label }}
+    <!-- ============ 行程表 ============ -->
+    <section id="sec-itinerary" class="space-y-4">
+      <!-- 日期按鈕 -->
+      <div class="flex gap-2 overflow-x-auto no-scrollbar py-2">
+        <button onclick="switchDay(1)" id="day-btn-1" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm day-btn-active">
+          <p class="text-xs text-opacity-80">Day 1</p>
+          <p class="text-xs font-bold mt-0.5">7月9日 (四)</p>
+        </button>
+        <button onclick="switchDay(2)" id="day-btn-2" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm">
+          <p class="text-xs text-gray-400">Day 2</p>
+          <p class="text-xs font-bold text-gray-600 mt-0.5">7月10日 (五)</p>
+        </button>
+        <button onclick="switchDay(3)" id="day-btn-3" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm">
+          <p class="text-xs text-gray-400">Day 3</p>
+          <p class="text-xs font-bold text-gray-600 mt-0.5">7月11日 (六)</p>
+        </button>
+        <button onclick="switchDay(4)" id="day-btn-4" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm">
+          <p class="text-xs text-gray-400">Day 4</p>
+          <p class="text-xs font-bold text-gray-600 mt-0.5">7月12日 (日)</p>
         </button>
       </div>
-      <!-- 行程內容 (收納) -->
-      <div v-for="(day, idx) in days" :key="'content-'+idx">
-        <div v-show="day.open" class="mt-4 bg-white/60 rounded-2xl p-3 space-y-3 border border-[#fad4c8]">
-          <div class="text-sm font-bold text-[#6a4139] flex items-center gap-1">
-            <i class="fas fa-flag-checkered text-[#d6937c]"></i> {{ day.label }}
+
+      <!-- 行程簡介 (摺疊式) -->
+      <div class="bg-gradient-to-r from-[#fdf0f2] to-[#fff5f6] p-4 rounded-2xl border border-[#ffd9de] relative overflow-hidden cursor-pointer" onclick="toggleDetail()">
+        <div class="absolute -right-6 -bottom-6 text-6xl opacity-10">✨</div>
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold text-[#e48070] uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="map" class="w-3.5 h-3.5"></i> 今日行程簡介
+          </h3>
+          <span id="toggle-icon" class="text-[#e48070] text-sm"><i data-lucide="chevron-down" class="w-4 h-4"></i></span>
+        </div>
+        <div id="route-flow" class="text-xs leading-relaxed text-gray-600 font-medium mt-1"></div>
+        <div id="wakeup-tip" class="text-xs text-[#e48070] font-bold mt-1"></div>
+      </div>
+
+      <!-- 詳細行程卡片 -->
+      <div id="itinerary-detail" class="space-y-4 hidden">
+        <div id="itinerary-cards" class="space-y-4"></div>
+      </div>
+    </section>
+
+    <!-- ============ 多人記帳 ============ -->
+    <section id="sec-billing" class="space-y-4 hidden">
+      <div class="cute-card p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2">
+          <h3 class="font-bold text-[#e48070] flex items-center gap-1"><i data-lucide="plus-circle" class="w-5 h-5"></i><span>新增消費</span></h3>
+          <span class="text-xs text-gray-400">精準結算</span>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500">項目名稱</label>
+          <input type="text" id="bill-name" placeholder="例：7/9 晚餐" class="w-full px-3 py-2 rounded-xl border border-[#ffd9de] focus:outline-none focus:ring-2 focus:ring-[#f5b0a0] text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-gray-500">幣種</label>
+            <select id="bill-currency" onchange="updateBillCurrencyUI()" class="w-full px-3 py-2 rounded-xl border border-[#ffd9de] text-sm bg-white">
+              <option value="JPY">日圓 (JPY)</option>
+              <option value="HKD">港幣 (HKD)</option>
+            </select>
           </div>
-          <div v-for="(step, si) in day.steps" :key="si" class="text-sm leading-relaxed border-b border-[#fae3db] pb-2 last:border-0">
-            <div class="flex items-start gap-1.5">
-              <span class="text-[#b87b6a] font-medium min-w-[20px]">{{ si+1 }}.</span>
-              <div>
-                <span class="font-medium">{{ step.from }} <i class="fas fa-arrow-right text-[#cf9b89] text-xs mx-1"></i> {{ step.to }}</span>
-                <div class="text-[#76534a] text-xs mt-0.5 flex flex-wrap items-center gap-1">
-                  <i class="fas fa-train text-[#b48a7a]"></i> {{ step.transit }}
-                  <span class="mx-1">·</span>
-                  <i class="fas fa-shoe-prints text-[#b48a7a]"></i> {{ step.walk }}
-                </div>
-                <!-- google map 連結 -->
-                <a :href="step.mapUrl" target="_blank" class="map-link text-xs inline-flex items-center mt-0.5">
-                  <i class="fas fa-map-pin"></i> 導航
-                </a>
-                <div v-if="step.exit" class="text-xs text-[#9d6f5e] mt-0.5 bg-[#fdede7] px-2 py-0.5 rounded-full inline-block">
-                  <i class="fas fa-door-open"></i> {{ step.exit }}
-                </div>
-              </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500">總金額</label>
+            <div class="relative">
+              <input type="number" id="bill-amount" placeholder="0" class="w-full pl-3 pr-8 py-2 rounded-xl border border-[#ffd9de] text-sm font-bold">
+              <span id="amount-unit" class="absolute right-3 top-2.5 text-xs text-gray-400 font-bold">JPY</span>
             </div>
           </div>
         </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-gray-500">付款人</label>
+            <select id="bill-payer" class="w-full px-3 py-2 rounded-xl border border-[#ffd9de] text-sm bg-white">
+              <option value="Vivian">Vivian</option>
+              <option value="Suzu">Suzu</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500">分攤方式</label>
+            <select id="bill-split-type" onchange="toggleSplitUI()" class="w-full px-3 py-2 rounded-xl border border-[#ffd9de] text-sm bg-white">
+              <option value="equal">人均均分</option>
+              <option value="custom">分開付</option>
+            </select>
+          </div>
+        </div>
+        <div id="split-equal-ui" class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] flex items-center gap-4 text-xs">
+          <span class="text-gray-500 font-bold">參與人：</span>
+          <label class="flex items-center gap-1"><input type="checkbox" id="sh-vivian" checked class="accent-[#f5b0a0]"> Vivian</label>
+          <label class="flex items-center gap-1"><input type="checkbox" id="sh-suzu" checked class="accent-[#f5b0a0]"> Suzu</label>
+        </div>
+        <div id="split-custom-ui" class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] space-y-2 hidden">
+          <p class="text-[11px] text-[#e48070] font-bold">各自應付金額：</p>
+          <div class="flex items-center gap-2"><span class="text-xs font-bold w-16">Vivian</span><input type="number" id="split-val-vivian" placeholder="金額" class="flex-1 px-3 py-1.5 rounded-lg border border-[#ffd9de] text-xs"></div>
+          <div class="flex items-center gap-2"><span class="text-xs font-bold w-16">Suzu</span><input type="number" id="split-val-suzu" placeholder="金額" class="flex-1 px-3 py-1.5 rounded-lg border border-[#ffd9de] text-xs"></div>
+        </div>
+        <button onclick="addBillItem()" class="w-full bg-[#f5b0a0] hover:bg-[#e48070] text-white py-2.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i><span>加入帳單</span>
+        </button>
+      </div>
+      <div class="cute-card p-4 space-y-3">
+        <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2">
+          <h3 class="font-bold text-[#e48070] text-sm flex items-center gap-1"><i data-lucide="list" class="w-4 h-4"></i><span>消費明細</span></h3>
+          <span id="bill-count" class="text-xs text-gray-400 font-bold">共 0 筆</span>
+        </div>
+        <div id="bill-items-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+          <p class="text-xs text-gray-400 text-center py-6">尚無消費紀錄 📝</p>
+        </div>
+      </div>
+      <div class="cute-card p-4 bg-gradient-to-br from-[#fdf0f2] to-white border-2 border-[#fccfc4] space-y-4">
+        <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2">
+          <h3 class="font-bold text-[#e48070] text-sm flex items-center gap-1"><i data-lucide="calculator" class="w-4 h-4"></i><span>最終結算</span></h3>
+          <div class="flex items-center gap-1 text-[11px] text-gray-500">
+            <span>匯率 JPY/HKD</span>
+            <input type="number" id="settle-rate" value="0.052" step="0.001" onchange="recalculateBills()" class="w-14 text-center border border-[#ffd9de] rounded bg-white font-bold text-xs">
+          </div>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-[#ffd9de] shadow-sm space-y-2">
+          <p class="text-xs font-bold text-gray-500">相互抵消後結算：</p>
+          <div id="settlement-result" class="py-2 text-center text-sm font-bold text-gray-400">請新增帳目以結算</div>
+          <div class="border-t border-dashed border-[#ffd9de] pt-2 mt-2 grid grid-cols-2 gap-2 text-[11px]">
+            <div><p class="text-gray-400">Vivian 總代付：</p><p id="total-paid-vivian" class="font-bold text-[#e48070]">JPY 0 / HKD 0</p><p class="text-gray-400 mt-1">應付：</p><p id="total-own-vivian" class="font-bold text-gray-600">JPY 0 / HKD 0</p></div>
+            <div class="border-l border-dashed border-[#ffd9de] pl-2"><p class="text-gray-400">Suzu 總代付：</p><p id="total-paid-suzu" class="font-bold text-[#e48070]">JPY 0 / HKD 0</p><p class="text-gray-400 mt-1">應付：</p><p id="total-own-suzu" class="font-bold text-gray-600">JPY 0 / HKD 0</p></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="exportToClipboard()" class="bg-[#f5b0a0] hover:bg-[#e48070] text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 shadow"><i data-lucide="copy" class="w-3.5 h-3.5"></i>複製明細</button>
+          <button onclick="clearAllBills()" class="border border-red-300 text-red-500 hover:bg-red-50 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>清空帳單</button>
+        </div>
+      </div>
+      <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">訊息</div>
+    </section>
+
+    <!-- ============ 匯率轉換 ============ -->
+    <section id="sec-rate" class="space-y-4 hidden">
+      <div class="cute-card p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2">
+          <h3 class="font-bold text-[#e48070] flex items-center gap-1"><i data-lucide="refresh-cw" class="w-5 h-5"></i><span>匯率計算器 JPY ⇄ HKD</span></h3>
+        </div>
+        <div class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] flex justify-between text-xs text-gray-500">
+          <span>1 JPY = <strong class="text-[#e48070]">0.0520</strong> HKD</span>
+          <span>1 HKD = <strong class="text-[#e48070]">19.23</strong> JPY</span>
+        </div>
+        <div><label class="text-xs font-bold text-gray-500">日圓 (JPY)</label><input type="number" id="calc-jpy" value="10000" oninput="convertCurrency('jpy')" class="w-full px-3 py-2.5 rounded-xl border border-[#ffd9de] font-bold"></div>
+        <div class="flex justify-center -my-2"><div class="bg-[#f5b0a0] text-white p-2 rounded-full shadow-md"><i data-lucide="arrow-up-down" class="w-4 h-4"></i></div></div>
+        <div><label class="text-xs font-bold text-gray-500">港幣 (HKD)</label><input type="number" id="calc-hkd" value="520" oninput="convertCurrency('hkd')" class="w-full px-3 py-2.5 rounded-xl border border-[#ffd9de] font-bold"></div>
       </div>
     </section>
 
-    <!-- 2. 地圖＋文字交通 (已內嵌於行程) 額外獨立地圖摘要 -->
-    <section class="card-pink p-4 mb-5">
-      <div class="flex items-center gap-3 mb-2">
-        <i class="fas fa-map-marked-alt text-[#c48372] text-xl"></i>
-        <h2 class="text-lg font-semibold text-[#5c3e39]">📍 移動摘要</h2>
-      </div>
-      <div class="space-y-2 text-sm text-[#624a42]">
-        <div><span class="tag-pink">羽田→五反田</span> 京急空港線直達 · 無障礙電梯出口</div>
-        <div><span class="tag-pink">五反田→澀谷</span> JR山手線 · B1出口電梯</div>
-        <div><span class="tag-pink">澀谷→原宿</span> 副都心線1站 · 5號出口電梯</div>
-        <div><span class="tag-pink">原宿→表參道</span> 千代田線1站 · B1手扶梯</div>
-        <div><span class="tag-pink">橫濱移動</span> 港未來線＋市營地鐵 · 8號出口電梯</div>
-        <div><span class="tag-pink">新橫濱→池袋</span> 東急新橫濱線直通 · 地下連通道</div>
-        <div><span class="tag-pink">秋葉原→成田</span> Skyliner 36分 · 日暮里無縫電梯</div>
-      </div>
-    </section>
+  </main>
 
-    <!-- 3. 記帳功能 (核心) -->
-    <section class="card-pink p-4 mb-5">
-      <div class="flex items-center gap-3 mb-3">
-        <i class="fas fa-coins text-[#c48372] text-xl"></i>
-        <h2 class="text-lg font-semibold text-[#5c3e39]">🧾 記帳 · 結算</h2>
-      </div>
-      <!-- 新增記帳 -->
-      <div class="bg-white/60 rounded-2xl p-3 border border-[#fad4c8] space-y-3">
-        <div class="flex flex-wrap gap-2 items-center">
-          <input v-model="newBill.name" placeholder="項目名稱 (例: 午餐)" class="flex-1 min-w-[100px] bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm focus:outline-none" />
-          <input v-model.number="newBill.total" placeholder="總金額" class="w-20 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm focus:outline-none" />
-          <select v-model="newBill.currency" class="bg-transparent border-b border-[#eccac0] py-1 text-sm">
-            <option value="JPY">日圓</option>
-            <option value="HKD">港幣</option>
-          </select>
-        </div>
-        <div class="flex flex-wrap gap-2 items-center">
-          <input v-model="newBill.payer" placeholder="付款人" class="w-24 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm" />
-          <select v-model="newBill.splitMode" class="bg-transparent border-b border-[#eccac0] py-1 text-sm">
-            <option value="equal">人均</option>
-            <option value="custom">分開付</option>
-          </select>
-          <input v-model.number="newBill.people" placeholder="人數" class="w-16 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm" />
-          <button @click="addBill" class="btn-soft-pink text-sm px-4 py-1"><i class="fas fa-plus mr-1"></i>新增</button>
-        </div>
-        <!-- 分開付人名欄位 -->
-        <div v-if="newBill.splitMode === 'custom'" class="flex flex-wrap gap-1">
-          <span class="text-xs text-[#7d5649]">人名＆金額：</span>
-          <div v-for="(p, idx) in newBill.customItems" :key="idx" class="flex items-center gap-1 bg-[#fae3db] px-2 py-0.5 rounded-full text-xs">
-            <input v-model="p.name" placeholder="人名" class="w-12 bg-transparent border-b border-[#dbb7aa] px-1" />
-            <input v-model.number="p.amount" placeholder="¥" class="w-14 bg-transparent border-b border-[#dbb7aa] px-1" />
-            <i class="fas fa-times-circle text-[#b77a68] cursor-pointer" @click="removeCustomItem(idx)"></i>
-          </div>
-          <button @click="addCustomItem" class="text-xs text-[#b77a68]"><i class="fas fa-plus-circle"></i></button>
-        </div>
-        <div class="text-xs text-[#8e6253] flex gap-2 flex-wrap">
-          <span><i class="far fa-circle"></i> 匯率參考: 1 HKD ≈ 18.5 JPY</span>
-          <span><i class="far fa-clock"></i> 可跨日結算</span>
-        </div>
-      </div>
-
-      <!-- 記帳清單＋結算 -->
-      <div class="mt-4 space-y-3">
-        <div v-for="(bill, idx) in bills" :key="idx" class="bg-white/70 rounded-2xl p-3 border border-[#fad4c8] text-sm" :class="{'opacity-60': bill.settled}">
-          <div class="flex justify-between items-start">
-            <div>
-              <span class="font-bold text-[#5c3e39]" :class="{'line-through': bill.settled}">{{ bill.name }}</span>
-              <span class="text-[#a5705d] ml-2">{{ bill.total }} {{ bill.currency }}</span>
-              <span class="tag-pink ml-2 text-[10px]">{{ bill.payer }} 付款</span>
-              <span v-if="bill.splitMode === 'equal'" class="tag-pink ml-1 text-[10px]">人均 ¥{{ (bill.total / bill.people).toFixed(0) }}</span>
-            </div>
-            <div class="flex gap-1">
-              <button @click="toggleSettle(idx)" class="text-xs px-3 py-1 rounded-full border border-[#eccac0] bg-white/50">
-                <i class="fas" :class="bill.settled ? 'fa-check-circle text-green-600' : 'fa-circle text-[#c48372]'"></i> {{ bill.settled ? '已結清' : '標記結清' }}
-              </button>
-              <button @click="removeBill(idx)" class="text-[#b77a68]"><i class="fas fa-trash-alt"></i></button>
-            </div>
-          </div>
-          <!-- 分開付明細 -->
-          <div v-if="bill.splitMode === 'custom' && bill.customItems" class="flex flex-wrap gap-1 mt-1">
-            <span v-for="(c, ci) in bill.customItems" :key="ci" class="bg-[#f5dfd7] px-2 py-0.5 rounded-full text-xs">
-              {{ c.name }}: {{ c.amount }} {{ bill.currency }}
-            </span>
-          </div>
-          <div v-if="bill.settled" class="text-xs text-green-700 mt-1"><i class="fas fa-check-circle"></i> 結清時間: {{ bill.settleTime || '剛剛' }}</div>
-        </div>
-      </div>
-
-      <!-- 最終結算＋匯出 -->
-      <div class="mt-4 bg-white/70 rounded-2xl p-4 border border-[#fad4c8]">
-        <div class="flex justify-between items-center flex-wrap gap-2">
-          <span class="font-semibold text-[#5c3e39]"><i class="fas fa-calculator"></i> 最終帳單</span>
-          <button @click="exportSettlement" class="btn-soft-pink text-xs px-3 py-1"><i class="fas fa-file-export"></i> 匯出明細</button>
-        </div>
-        <div class="text-sm mt-2 space-y-1">
-          <div v-for="(line, li) in settlementLines" :key="li" class="flex items-center gap-2 border-b border-[#fae3db] py-1">
-            <span class="text-[#6a4139]">{{ line }}</span>
-          </div>
-          <div v-if="settlementLines.length === 0" class="text-[#b58a7a] text-xs">尚無記帳項目</div>
-          <!-- 雙幣種顯示 -->
-          <div class="flex gap-4 mt-2 text-xs bg-[#fae3db] p-2 rounded-2xl">
-            <span><i class="fas fa-yen-sign"></i> 日圓: {{ totalJPY }} JPY</span>
-            <span><i class="fas fa-dollar-sign"></i> 港幣: {{ totalHKD }} HKD</span>
-            <span class="text-[#9d6f5e]">匯率 1HKD ≈ 18.5JPY</span>
-          </div>
-        </div>
-        <!-- 結算範例 (A should pay B) -->
-        <div class="mt-2 text-sm bg-[#ffded2] p-2 rounded-2xl text-[#633d34]">
-          <i class="fas fa-hand-holding-usd"></i> 
-          <span v-if="netSettle">{{ netSettle }}</span>
-          <span v-else>記帳後自動計算互欠</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. 匯率計算器 -->
-    <section class="card-pink p-4">
-      <div class="flex items-center gap-3 mb-2">
-        <i class="fas fa-exchange-alt text-[#c48372] text-xl"></i>
-        <h2 class="text-lg font-semibold text-[#5c3e39]">💱 匯率計算器</h2>
-      </div>
-      <div class="bg-white/60 rounded-2xl p-3 flex flex-wrap gap-3 items-center">
-        <div class="flex items-center gap-1">
-          <input v-model.number="yenAmount" placeholder="日圓" class="w-24 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm" />
-          <span class="text-sm">JPY</span>
-        </div>
-        <i class="fas fa-arrow-right text-[#b48a7a]"></i>
-        <div class="flex items-center gap-1">
-          <input v-model.number="hkdAmount" placeholder="港幣" class="w-24 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm" />
-          <span class="text-sm">HKD</span>
-        </div>
-        <span class="text-xs text-[#8e6253] ml-auto">1 HKD ≈ 18.5 JPY</span>
-      </div>
-      <div class="text-xs text-[#624a42] mt-1 px-2">
-        <span v-if="yenAmount">約 {{ (yenAmount / 18.5).toFixed(2) }} HKD</span>
-        <span v-if="hkdAmount">約 {{ (hkdAmount * 18.5).toFixed(0) }} JPY</span>
-      </div>
-    </section>
+  <!-- 預約詳情 Modal -->
+  <div id="reservation-modal" class="reservation-modal hidden" onclick="if(event.target===this) closeReservation()">
+    <div class="reservation-modal-content">
+      <div class="close-btn" onclick="closeReservation()">✕</div>
+      <h3 id="modal-title" class="font-bold text-[#e48070] text-lg mt-2">預約截圖</h3>
+      <img id="modal-image" src="" alt="預約截圖" style="width:100%; border-radius:16px; margin-top:8px;">
+      <p id="modal-caption" class="text-xs text-gray-500 mt-2 text-center"></p>
+    </div>
   </div>
 
   <script>
-    const { createApp, ref, computed, watch } = Vue;
+    // ==================== 資料 ====================
+    const JPY_TO_HKD_RATE = 0.052;
 
-    const app = createApp({
-      setup() {
-        // 行程資料 (濃縮)
-        const days = ref([
-          { label: '7/9 (四)', open: false, steps: [
-            { from: '羽田T3', to: '五反田Mystays', transit: '京急空港線直達', walk: '步行3-5m', exit: '無障礙電梯出口', mapUrl: 'https://maps.google.com/?q=羽田空港T3+to+五反田' },
-            { from: '五反田', to: '澀谷Aries', transit: 'JR山手線4站', walk: '地下道B1電梯+5-8m', exit: 'B1出口電梯', mapUrl: 'https://maps.google.com/?q=五反田+to+澀谷Aries' },
-            { from: '澀谷Aries', to: '西武澀谷', transit: '步行', walk: '5-8m', exit: '人行道', mapUrl: 'https://maps.google.com/?q=澀谷Aries+to+西武澀谷' },
-            { from: '西武澀谷', to: 'Liqumu原宿', transit: '副都心線1站', walk: '5號出口', exit: '5號出口電梯', mapUrl: 'https://maps.google.com/?q=西武澀谷+to+Liqumu' },
-            { from: 'Liqumu原宿', to: 'Ginger Garden', transit: '千代田線1站', walk: 'B1手扶梯', exit: 'B1出口', mapUrl: 'https://maps.google.com/?q=Liqumu+to+Ginger' },
-            { from: 'Ginger Garden', to: 'MO-MO-PARADISE', transit: '銀座線1站', walk: 'BEAM電梯', exit: '澀谷BEAM 6F', mapUrl: 'https://maps.google.com/?q=Ginger+to+MOMO' }
-          ]},
-          { label: '7/10 (五)', open: false, steps: [
-            { from: '五反田', to: '橫濱新格蘭', transit: 'JR山手線→湘南新宿→港未來', walk: '1號出口手扶梯', exit: '1號出口', mapUrl: 'https://maps.google.com/?q=五反田+to+橫濱新格蘭' },
-            { from: '新格蘭', to: '拉麵博物館', transit: '港未來→市營藍線', walk: '8號出口電梯', exit: '8號出口', mapUrl: 'https://maps.google.com/?q=新格蘭+to+拉麵博物館' },
-            { from: '拉麵博物館', to: '池袋Sunshine', transit: '東急新橫濱線直通', walk: '地下連通道', exit: 'Sunshine地下', mapUrl: 'https://maps.google.com/?q=拉麵博物館+to+池袋' }
-          ]},
-          { label: '7/11 (六)', open: false, steps: [
-            { from: '五反田', to: '新大久保My fave', transit: 'JR山手線', walk: '主幹道5-7m', exit: '', mapUrl: 'https://maps.google.com/?q=五反田+to+新大久保' },
-            { from: '新大久保', to: 'Laforet原宿', transit: 'JR山手線3站', walk: '表參道大道', exit: '表參道口', mapUrl: 'https://maps.google.com/?q=新大久保+to+Laforet' },
-            { from: 'Laforet', to: 'HAUTE COUTURE', transit: '步行', walk: '表參道8-10m', exit: '二樓無電梯', mapUrl: 'https://maps.google.com/?q=Laforet+to+HAUTE' }
-          ]},
-          { label: '7/12 (日)', open: false, steps: [
-            { from: '五反田', to: '秋葉原', transit: 'JR山手線', walk: '中央改札口寄物', exit: '中央改札', mapUrl: 'https://maps.google.com/?q=五反田+to+秋葉原' },
-            { from: '秋葉原', to: '成田T2', transit: '山手線→日暮里Skyliner', walk: '電梯直達', exit: 'Skyliner月台', mapUrl: 'https://maps.google.com/?q=秋葉原+to+成田' }
-          ]}
-        ]);
-
-        const toggleDay = (idx) => { days.value[idx].open = !days.value[idx].open; };
-
-        // 記帳系統
-        const bills = ref([]);
-        const newBill = ref({
-          name: '', total: 0, currency: 'JPY', payer: '', splitMode: 'equal', people: 2, customItems: []
-        });
-
-        const addBill = () => {
-          if (!newBill.value.name || !newBill.value.total || !newBill.value.payer) return alert('請填寫名稱/總額/付款人');
-          const copy = { ...newBill.value, customItems: [...newBill.value.customItems], settled: false, settleTime: null };
-          bills.value.push(copy);
-          newBill.value = { name: '', total: 0, currency: 'JPY', payer: '', splitMode: 'equal', people: 2, customItems: [] };
-        };
-        const removeBill = (idx) => { bills.value.splice(idx, 1); };
-        const toggleSettle = (idx) => {
-          const b = bills.value[idx];
-          b.settled = !b.settled;
-          if (b.settled) b.settleTime = new Date().toLocaleString();
-          else b.settleTime = null;
-        };
-        const addCustomItem = () => { newBill.value.customItems.push({ name: '', amount: 0 }); };
-        const removeCustomItem = (idx) => { newBill.value.customItems.splice(idx, 1); };
-
-        // 結算邏輯 (Vivian & Suzu 範例)
-        const settlementLines = computed(() => {
-          const lines = [];
-          let vivianPaid = 0, suzuPaid = 0, vivianShare = 0, suzuShare = 0;
-          bills.value.forEach(b => {
-            if (b.settled) return;
-            const total = b.total;
-            const payer = b.payer;
-            if (b.splitMode === 'equal') {
-              const per = total / b.people;
-              if (payer === 'Vivian') { vivianPaid += total; vivianShare += per; }
-              else if (payer === 'Suzu') { suzuPaid += total; suzuShare += per; }
-              else { /* 其他人視為各半簡化 */ }
-            } else if (b.splitMode === 'custom') {
-              b.customItems.forEach(c => {
-                if (c.name === 'Vivian') { if (payer === 'Vivian') vivianPaid += c.amount; else suzuPaid += c.amount; }
-                else if (c.name === 'Suzu') { if (payer === 'Suzu') suzuPaid += c.amount; else vivianPaid += c.amount; }
-              });
-            }
-          });
-          const diff = vivianPaid - vivianShare - (suzuPaid - suzuShare);
-          if (diff > 0) lines.push(`Vivian 應付 Suzu ${Math.abs(diff).toFixed(0)} JPY (≈${(Math.abs(diff)/18.5).toFixed(2)} HKD)`);
-          else if (diff < 0) lines.push(`Suzu 應付 Vivian ${Math.abs(diff).toFixed(0)} JPY (≈${(Math.abs(diff)/18.5).toFixed(2)} HKD)`);
-          else lines.push('✅ 雙方已平衡');
-          return lines;
-        });
-
-        const netSettle = computed(() => {
-          if (settlementLines.value.length) return settlementLines.value[0];
-          return '';
-        });
-
-        const totalJPY = computed(() => {
-          let sum = 0;
-          bills.value.forEach(b => { if (!b.settled) sum += b.currency === 'JPY' ? b.total : b.total * 18.5; });
-          return sum.toFixed(0);
-        });
-        const totalHKD = computed(() => {
-          let sum = 0;
-          bills.value.forEach(b => { if (!b.settled) sum += b.currency === 'HKD' ? b.total : b.total / 18.5; });
-          return sum.toFixed(2);
-        });
-
-        const exportSettlement = () => {
-          let text = '🌸 粉色旅途 · 最終帳單明細\n';
-          bills.value.forEach((b, i) => {
-            text += `${i+1}. ${b.name} ${b.total}${b.currency} 付款:${b.payer} ${b.settled ? '✅已結清' : '未結清'}`;
-            if (b.splitMode === 'custom') text += ` 明細:${b.customItems.map(c=>c.name+':'+c.amount).join(' ')}`;
-            text += '\n';
-          });
-          text += `\n總欠款: ${netSettle.value || '無'}`;
-          alert(text);
-        };
-
-        // 匯率計算器
-        const yenAmount = ref(0);
-        const hkdAmount = ref(0);
-        watch(yenAmount, (val) => { if (val) hkdAmount.value = (val / 18.5); });
-        watch(hkdAmount, (val) => { if (val) yenAmount.value = (val * 18.5); });
-
-        return {
-          days, toggleDay,
-          bills, newBill, addBill, removeBill, toggleSettle, addCustomItem, removeCustomItem,
-          settlementLines, netSettle, totalJPY, totalHKD, exportSettlement,
-          yenAmount, hkdAmount
-        };
+    // 行程資料 (加入 screenshot 屬性)
+    const itineraryData = {
+      1: {
+        date: "7月9日 (四)",
+        flow: "✈️ 羽田T3 ➔ 五反田飯店 ➔ 澀谷編髮 ➔ Aries ➔ 西武澀谷 ➔ Liqumu原宿 ➔ Ginger Garden ➔ 壽喜燒晚餐",
+        wakeup: "⏰ 聽日請 04:00 起身，準備出發！",
+        items: [
+          { 
+            title: "羽田T3 ➔ Hotel Mystays 五反田", 
+            transport: "京急空港線直達五反田站 (約25分鐘)", 
+            tips: "💡 清晨無痛攻略：入境後直衝 T3 2F TIAT Shower Room（¥1,500/30分鐘，無需預約）→ 於 Powder Room 完妝換裝 → 寄存行李於飯店。預計 08:30 前空手全妝出發！",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Haneda+Airport+Terminal+3&destination=Hotel+MyStays+Gotanda+Ekimae",
+            deadline: "🔔 最晚 07:30 要離開機場"   // 保留原始文字，用於顯示
+          },
+          { 
+            title: "澀谷編髮預約 (09:15)", 
+            transport: "JR山手線4站至澀谷站 (約7分鐘)", 
+            tips: "出口：B1出口電梯（B1出口エレベーター），步行5-8分鐘。澀谷站因重建工程動線複雜，記得跟隨地下道指示。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Aries+Shibuya",
+            deadline: "🔔 最晚 08:40 要從五反田離開"
+          },
+          { 
+            title: "Aries 澀谷西口店", 
+            transport: "步行5-8分鐘", 
+            tips: "留意行人道平整，避開地磚縫隙。此區為澀谷商業核心，人流密度極高。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Aries+Shibuya&destination=Seibu+Shibuya",
+            deadline: "🔔 最晚 10:30 要從Aries離開"
+          },
+          { 
+            title: "Aoppella 5週年特展 @ 西武澀谷", 
+            transport: "副都心線1站至明治神宮前站", 
+            tips: "出口：5號出口電梯（5番出口エレベーター）。西武百貨館內手扶梯可直達會場。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Seibu+Shibuya&destination=Liqumu+Harajuku",
+            deadline: "🔔 最晚 12:30 要從西武澀谷離開"
+          },
+          { 
+            title: "Liqumu 原宿店", 
+            transport: "千代田線1站至表參道站", 
+            tips: "出口：B1出口手扶梯（B1出口エスカレーター）。若足部已累積疲勞，強烈建議搭乘千代田線進行短程換乘。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA",
+            deadline: "🔔 最晚 14:00 要從Liqumu離開",
+            instagram: "https://www.instagram.com/liqumu/"
+          },
+          { 
+            title: "Ginger Garden AOYAMA (16:00 預約)", 
+            transport: "步行約10分鐘", 
+            tips: "💡 預約編號：PZUN4DN6Z9｜電話：08076152945｜2名｜¥6,800/人（含飲放題）",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA",
+            deadline: "🔔 最晚 15:45 要到達 Ginger Garden",
+            instagram: "https://www.instagram.com/gingergardenaoyama/",
+            screenshot: 'gingergarden.jpg',
+            reservationCaption: "Ginger Garden AOYAMA 預約截圖"
+          },
+          { 
+            title: "壽喜燒晚餐 with 時音（餐廳待定）", 
+            transport: "銀座線1站回澀谷站", 
+            tips: "澀谷BEAM大樓電梯直達6樓。餐廳內部桌椅寬敞，高度適合高跟鞋旅客用餐後的足部釋壓。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Ginger+Garden+AOYAMA&destination=Shibuya+Station",
+            deadline: "🔔 最晚 18:30 要抵達澀谷"
+          }
+        ]
+      },
+      2: {
+        date: "7月10日 (五)",
+        flow: "五反田 ➔ 橫濱新格蘭 ➔ 拉麵博物館 ➔ 池袋Sunshine",
+        wakeup: "⏰ 聽日請 08:00 起身，準備跨區移動！",
+        items: [
+          { 
+            title: "五反田 ➔ 橫濱新格蘭飯店", 
+            transport: "JR山手線→湘南新宿→港未來線", 
+            tips: "出口：元町中華街站1號出口手扶梯（1番出口エスカレーター）。出站後僅需平路步行1分鐘即可步入飯店大堂。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Hotel+New+Grand",
+            deadline: "🔔 最晚 09:30 要從五反田離開"
+          },
+          { 
+            title: "新橫濱拉麵博物館", 
+            transport: "港未來線→市營藍線", 
+            tips: "出口：新橫濱站8號出口電梯（8番出口エレベーター）。站內轉乘通道較長，請跟隨無障礙指標使用電梯。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+New+Grand&destination=Shinyokohama+Ramen+Museum",
+            deadline: "🔔 最晚 12:00 要從新格蘭離開"
+          },
+          { 
+            title: "池袋 namco + Sunshine City", 
+            transport: "東急新橫濱線直通 (約40分鐘)", 
+            tips: "池袋站Sunshine地下連通道（地下連絡通路）。東口人流量極大，建議走地下通道直達太陽城。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Shinyokohama+Ramen+Museum&destination=Ikebukuro+Station",
+            deadline: "🔔 最晚 15:00 要從拉麵博物館離開"
+          }
+        ]
+      },
+      3: {
+        date: "7月11日 (六)",
+        flow: "五反田 ➔ 新大久保 ➔ Laforet原宿 ➔ HAUTE COUTURE",
+        wakeup: "⏰ 聽日請 09:00 起身，悠閒手作日！",
+        items: [
+          { 
+            title: "新大久保 My fave Café (拼製娃娃)", 
+            transport: "JR山手線直達 (約14分鐘)", 
+            tips: "沿主幹道步行5-7分鐘，避開小巷。新大久保站前街道較狹窄，平日下午人潮水泄不通。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Shin-Okubo+Station",
+            deadline: "🔔 最晚 09:45 要從五反田離開"
+          },
+          { 
+            title: "Laforet 原宿 (失憶投捕快閃店)", 
+            transport: "JR山手線3站至原宿站", 
+            tips: "出口：表參道口出站（表参道口），避開竹下通。沿著寬闊平坦的表參道大道步行。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Shin-Okubo+Station&destination=Laforet+Harajuku",
+            deadline: "🔔 最晚 12:00 要從新大久保離開"
+          },
+          { 
+            title: "HAUTE COUTURE CAFE OMOTESANDO (16:00 預約)", 
+            transport: "步行8-10分鐘", 
+            tips: "💡 預約編號：PAELZEMGUA｜電話：08076152945｜2名｜¥6,450/人（期間限定白桃Afternoon Tea）",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Laforet+Harajuku&destination=HAUTE+COUTURE+CAFE+OMOTESANDO",
+            deadline: "🔔 最晚 15:45 要到達 HAUTE COUTURE",
+            instagram: "https://www.instagram.com/hautecouture_brunch/",
+            screenshot: 'haute.jpg',
+            reservationCaption: "HAUTE COUTURE BRUNCH 預約截圖"
+          }
+        ]
+      },
+      4: {
+        date: "7月12日 (日)",
+        flow: "五反田 ➔ 秋葉原 (寄存) ➔ 日暮里 ➔ 成田T2",
+        wakeup: "⏰ 聽日請 08:30 起身，準備返程！",
+        items: [
+          { 
+            title: "五反田 ➔ 秋葉原 (行李寄存)", 
+            transport: "JR山手線外環 (約18分鐘)", 
+            tips: "💡 零拖行秘訣：秋葉原站內中央改札口區域設有全東京最大規模智慧型電子置物櫃（支援Suica）。將大行李箱存入後，空手輕鬆穿高跟鞋逛街！",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Akihabara+Station",
+            deadline: "🔔 最晚 10:30 要從五反田離開"
+          },
+          { 
+            title: "秋葉原補貨 (Radio會館 / namco)", 
+            transport: "步行1-2分鐘", 
+            tips: "空手穿高跟鞋能極大提升在電氣街搜刮周邊的戰鬥力。中午12:45前完成所有補貨。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Akihabara+Radio+Kaikan",
+            deadline: "🔔 最晚 12:45 要取回行李"
+          },
+          { 
+            title: "秋葉原 ➔ 日暮里 ➔ 成田T2", 
+            transport: "山手線→日暮里Skyliner (約36分鐘)", 
+            tips: "日暮里站無縫電梯轉乘（日暮里駅エレベーター乗り換え）。站內動線完全平整，設有專用大型電梯直達Skyliner月台。",
+            map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Keisei-Ueno+Station",
+            deadline: "🔔 最晚 13:00 要從秋葉原離開"
+          }
+        ]
       }
-    });
+    };
 
-    app.mount('#app');
+    // 記帳資料
+    let billsList = [];
+    let currentDay = 1;
+    let detailVisible = false;
+    let activeScreenshot = '';
+
+    // ==================== 預約詳情 Modal ====================
+    function showReservation(screenshotFilename, caption) {
+      const modal = document.getElementById('reservation-modal');
+      const img = document.getElementById('modal-image');
+      const captionEl = document.getElementById('modal-caption');
+      if (screenshotFilename) {
+        img.src = screenshotFilename;
+        img.alt = caption || '預約截圖';
+      } else {
+        img.src = '';
+        img.alt = '暫無預約截圖';
+      }
+      captionEl.textContent = caption || '預約詳情';
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeReservation() {
+      document.getElementById('reservation-modal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    // ==================== UI 切換 ====================
+    function switchTab(tab) {
+      ['itinerary','billing','rate'].forEach(id => document.getElementById('sec-'+id).classList.add('hidden'));
+      ['tab-itinerary','tab-billing','tab-rate'].forEach(id => {
+        document.getElementById(id).className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 text-gray-500 hover:bg-[#fdf0f2] flex flex-col items-center justify-center gap-0.5";
+      });
+      if (tab==='itinerary') { document.getElementById('sec-itinerary').classList.remove('hidden'); document.getElementById('tab-itinerary').className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"; }
+      else if (tab==='billing') { document.getElementById('sec-billing').classList.remove('hidden'); document.getElementById('tab-billing').className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"; recalculateBills(); }
+      else { document.getElementById('sec-rate').classList.remove('hidden'); document.getElementById('tab-rate').className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"; }
+      lucide.createIcons();
+    }
+
+    function switchDay(day) {
+      currentDay = day;
+      for (let d=1; d<=4; d++) {
+        const btn = document.getElementById('day-btn-'+d);
+        if (d===day) {
+          btn.className = "flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm day-btn-active";
+          const p1 = btn.querySelector('p:first-child');
+          const p2 = btn.querySelector('p:last-child');
+          if (p1) p1.className = "text-xs text-opacity-80 text-white";
+          if (p2) p2.className = "text-xs font-bold mt-0.5 text-white";
+        } else {
+          btn.className = "flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm";
+          const p1 = btn.querySelector('p:first-child');
+          const p2 = btn.querySelector('p:last-child');
+          if (p1) p1.className = "text-xs text-gray-400";
+          if (p2) p2.className = "text-xs font-bold text-gray-600 mt-0.5";
+        }
+      }
+      renderItinerary();
+    }
+
+    function toggleDetail() {
+      detailVisible = !detailVisible;
+      const detail = document.getElementById('itinerary-detail');
+      const icon = document.getElementById('toggle-icon');
+      if (detailVisible) {
+        detail.classList.remove('hidden');
+        icon.innerHTML = '<i data-lucide="chevron-up" class="w-4 h-4"></i>';
+      } else {
+        detail.classList.add('hidden');
+        icon.innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
+      }
+      lucide.createIcons();
+    }
+
+    function renderItinerary() {
+      const data = itineraryData[currentDay];
+      if (!data) return;
+      
+      document.getElementById('route-flow').innerText = data.flow;
+      document.getElementById('wakeup-tip').innerHTML = data.wakeup;
+
+      const container = document.getElementById('itinerary-cards');
+      container.innerHTML = '';
+      
+      data.items.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = "cute-card p-5 space-y-3";
+        
+        // 構建額外按鈕
+        let extraHtml = '';
+        if (item.instagram) {
+          extraHtml += `<a href="${item.instagram}" target="_blank" class="reservation-btn"><i data-lucide="instagram" class="w-3 h-3"></i> Instagram</a>`;
+        }
+        if (item.screenshot) {
+          extraHtml += `<a href="#" class="reservation-btn" data-screenshot="${item.screenshot}" data-caption="${item.reservationCaption || '預約截圖'}" onclick="event.preventDefault(); showReservation(this.dataset.screenshot, this.dataset.caption);"><i data-lucide="file-text" class="w-3 h-3"></i> 預約詳情</a>`;
+        }
+
+        // ----- 修改: 將 deadline 移動到卡片最上方，改為純文字樣式 -----
+        let deadlineHtml = '';
+        if (item.deadline) {
+          // 移除所有卡片樣式，只保留鈴鐺 + 純文字
+          deadlineHtml = `<div class="deadline-plain">${item.deadline}</div>`;
+        }
+        
+        card.innerHTML = `
+          ${deadlineHtml}   <!-- 提醒文字放在最上方 -->
+          <div class="flex items-start gap-2">
+            <span class="bg-[#f5b0a0] text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">${idx+1}</span>
+            <h4 class="font-bold text-gray-800 text-sm">${item.title}</h4>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs text-gray-600">🚆 ${item.transport}</div>
+          <div class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] text-xs text-gray-700">💡 ${item.tips}</div>
+          ${extraHtml ? `<div class="flex flex-wrap gap-2 mt-1">${extraHtml}</div>` : ''}
+          <div class="flex justify-end"><a href="${item.map}" target="_blank" class="bg-white border-2 border-[#ffd9de] text-[#e48070] hover:bg-[#fdf0f2] px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>導航</a></div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+
+      if (!detailVisible) {
+        document.getElementById('itinerary-detail').classList.add('hidden');
+        document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
+      } else {
+        document.getElementById('itinerary-detail').classList.remove('hidden');
+        document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-up" class="w-4 h-4"></i>';
+      }
+      lucide.createIcons();
+    }
+
+    // ==================== 記帳邏輯 (不變) ====================
+    function toggleSplitUI() {
+      const val = document.getElementById('bill-split-type').value;
+      document.getElementById('split-equal-ui').classList.toggle('hidden', val!=='equal');
+      document.getElementById('split-custom-ui').classList.toggle('hidden', val!=='custom');
+    }
+    function updateBillCurrencyUI() {
+      document.getElementById('amount-unit').innerText = document.getElementById('bill-currency').value;
+    }
+
+    function addBillItem() {
+      const name = document.getElementById('bill-name').value.trim();
+      const amount = parseFloat(document.getElementById('bill-amount').value);
+      const currency = document.getElementById('bill-currency').value;
+      const payer = document.getElementById('bill-payer').value;
+      const splitType = document.getElementById('bill-split-type').value;
+      if (!name) { showToast("請輸入項目名稱 💖"); return; }
+      if (isNaN(amount) || amount<=0) { showToast("請輸入正確金額"); return; }
+
+      let shares = {Vivian:false, Suzu:false};
+      let customShares = {Vivian:0, Suzu:0};
+
+      if (splitType === 'equal') {
+        const sv = document.getElementById('sh-vivian').checked, ss = document.getElementById('sh-suzu').checked;
+        if (!sv && !ss) { showToast("至少選擇一位參與人"); return; }
+        shares = {Vivian:sv, Suzu:ss};
+        const count = (sv?1:0)+(ss?1:0);
+        const per = amount/count;
+        if (sv) customShares.Vivian = per;
+        if (ss) customShares.Suzu = per;
+      } else {
+        const vv = parseFloat(document.getElementById('split-val-vivian').value) || 0;
+        const ss = parseFloat(document.getElementById('split-val-suzu').value) || 0;
+        if (vv+ss===0) { showToast("請填寫分開付款金額"); return; }
+        customShares = {Vivian:vv, Suzu:ss};
+        shares = {Vivian: vv>0, Suzu: ss>0};
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      billsList.push({
+        id: Date.now().toString(),
+        name, payer, amount, currency, splitType, shares, customShares,
+        cleared: false, date: dateStr
+      });
+      showToast("✅ 已加入帳目");
+      document.getElementById('bill-name').value = '';
+      document.getElementById('bill-amount').value = '';
+      document.getElementById('split-val-vivian').value = '';
+      document.getElementById('split-val-suzu').value = '';
+      recalculateBills();
+    }
+
+    function toggleClearItem(id) {
+      const item = billsList.find(i => i.id === id);
+      if (item) { item.cleared = !item.cleared; recalculateBills(); }
+    }
+    function deleteBillItem(id) {
+      billsList = billsList.filter(i => i.id !== id);
+      recalculateBills();
+    }
+
+    function recalculateBills() {
+      const rate = parseFloat(document.getElementById('settle-rate').value) || JPY_TO_HKD_RATE;
+      const container = document.getElementById('bill-items-list');
+      container.innerHTML = '';
+      if (billsList.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-400 text-center py-6">尚無消費紀錄 📝</p>';
+      } else {
+        billsList.forEach(item => {
+          const cleared = item.cleared;
+          const div = document.createElement('div');
+          div.className = `p-3 rounded-xl border border-[#ffd9de] bg-white space-y-1.5 ${cleared ? 'opacity-60 bg-gray-50' : ''}`;
+          let detail = item.splitType === 'equal' ? `均分 (${Object.keys(item.shares).filter(k=>item.shares[k]).join(', ')})` : `自訂 (V:${item.customShares.Vivian.toFixed(0)} / S:${item.customShares.Suzu.toFixed(0)})`;
+          div.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2"><input type="checkbox" ${cleared?'checked':''} onchange="toggleClearItem('${item.id}')" class="accent-[#f5b0a0]"><span class="text-xs font-bold ${cleared?'line-through text-gray-400':''}">${item.name}</span></div>
+              <button onclick="deleteBillItem('${item.id}')" class="text-gray-300 hover:text-red-500"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="flex justify-between text-[10px] text-gray-400 px-6"><span>付款人 <strong class="text-gray-600">${item.payer}</strong> (${item.currency} ${item.amount})</span><span>${detail}</span></div>
+            <div class="text-[9px] text-gray-300 text-right">${item.date} ${cleared ? '🔒 已結清' : '⏳ 待結'}</div>
+          `;
+          container.appendChild(div);
+        });
+      }
+      lucide.createIcons();
+      document.getElementById('bill-count').innerText = `共 ${billsList.length} 筆`;
+
+      let vPaidJPY=0, sPaidJPY=0, vOwnJPY=0, sOwnJPY=0;
+      billsList.forEach(item => {
+        if (item.cleared) return;
+        const factor = item.currency === 'JPY' ? 1 : (1/rate);
+        const amtJPY = item.amount * factor;
+        if (item.payer === 'Vivian') vPaidJPY += amtJPY;
+        else sPaidJPY += amtJPY;
+        vOwnJPY += item.customShares.Vivian * factor;
+        sOwnJPY += item.customShares.Suzu * factor;
+      });
+
+      document.getElementById('total-paid-vivian').innerText = `¥${vPaidJPY.toFixed(0)} / $${(vPaidJPY*rate).toFixed(1)}`;
+      document.getElementById('total-paid-suzu').innerText = `¥${sPaidJPY.toFixed(0)} / $${(sPaidJPY*rate).toFixed(1)}`;
+      document.getElementById('total-own-vivian').innerText = `¥${vOwnJPY.toFixed(0)} / $${(vOwnJPY*rate).toFixed(1)}`;
+      document.getElementById('total-own-suzu').innerText = `¥${sOwnJPY.toFixed(0)} / $${(sOwnJPY*rate).toFixed(1)}`;
+
+      const vBalance = vPaidJPY - vOwnJPY;
+      const sBalance = sPaidJPY - sOwnJPY;
+      const res = document.getElementById('settlement-result');
+      if (billsList.filter(i=>!i.cleared).length === 0) {
+        res.innerHTML = '<p class="text-sm font-bold text-gray-400">✨ 全部已結清 ✨</p>';
+      } else if (Math.abs(vBalance) < 0.1) {
+        res.innerHTML = '<p class="text-[#e48070] font-bold">👌 完美平衡！</p>';
+      } else if (vBalance < 0) {
+        const owe = Math.abs(vBalance);
+        res.innerHTML = `<div class="text-[#e48070] font-bold text-lg">👉 Vivian 應付 Suzu</div><div class="text-2xl font-black text-[#e48070]">¥${owe.toFixed(0)} <span class="text-sm text-gray-400">或</span> $${(owe*rate).toFixed(1)}</div>`;
+      } else {
+        const owe = Math.abs(sBalance);
+        res.innerHTML = `<div class="text-[#e48070] font-bold text-lg">👉 Suzu 應付 Vivian</div><div class="text-2xl font-black text-[#e48070]">¥${owe.toFixed(0)} <span class="text-sm text-gray-400">或</span> $${(owe*rate).toFixed(1)}</div>`;
+      }
+    }
+
+    function clearAllBills() { if (confirm('清空所有記帳？')) { billsList = []; recalculateBills(); showToast('已清空 🧹'); } }
+
+    function exportToClipboard() {
+      const rate = parseFloat(document.getElementById('settle-rate').value) || JPY_TO_HKD_RATE;
+      let text = `✨ 東京推活之旅 · 結帳對帳單 ✨\n日期: ${new Date().toLocaleString()}\n匯率: 1 JPY = ${rate} HKD\n-------------------------------------------\n`;
+      billsList.forEach((item,i) => {
+        text += `${i+1}. ${item.name} ${item.cleared?'[已結清]':'[未結清]'}\n   付款人: ${item.payer} (${item.currency} ${item.amount})\n   分攤: ${item.splitType==='equal'?'人均均分':`V:${item.customShares.Vivian} / S:${item.customShares.Suzu}`}\n   時間: ${item.date}\n\n`;
+      });
+      let vPaid=0, sPaid=0, vOwn=0, sOwn=0;
+      billsList.forEach(item => {
+        if (item.cleared) return;
+        const f = item.currency==='JPY'?1:(1/rate);
+        const a = item.amount*f;
+        if (item.payer==='Vivian') vPaid+=a; else sPaid+=a;
+        vOwn+=item.customShares.Vivian*f; sOwn+=item.customShares.Suzu*f;
+      });
+      const vb = vPaid - vOwn, sb = sPaid - sOwn;
+      text += `📊 最終結算 (未結清)\nVivian 代付: ¥${vPaid.toFixed(0)} / $${(vPaid*rate).toFixed(1)}\nSuzu 代付: ¥${sPaid.toFixed(0)} / $${(sPaid*rate).toFixed(1)}\n`;
+      if (Math.abs(vb)<0.1) text += '✨ 完美平衡 ✨\n';
+      else if (vb<0) text += `👉 Vivian 應付 Suzu: ¥${Math.abs(vb).toFixed(0)} ($${(Math.abs(vb)*rate).toFixed(1)})\n`;
+      else text += `👉 Suzu 應付 Vivian: ¥${Math.abs(sb).toFixed(0)} ($${(Math.abs(sb)*rate).toFixed(1)})\n`;
+      text += '\n💖 推活愉快！';
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('📤 明細已複製到剪貼簿');
+    }
+
+    function convertCurrency(dir) {
+      const rate = JPY_TO_HKD_RATE;
+      if (dir === 'jpy') {
+        const jpy = parseFloat(document.getElementById('calc-jpy').value) || 0;
+        document.getElementById('calc-hkd').value = (jpy * rate).toFixed(2);
+      } else {
+        const hkd = parseFloat(document.getElementById('calc-hkd').value) || 0;
+        document.getElementById('calc-jpy').value = (hkd / rate).toFixed(0);
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.className = "fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-100";
+      setTimeout(() => { t.className = "fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none"; }, 2500);
+    }
+
+    window.onload = function() {
+      lucide.createIcons();
+      switchDay(1);
+      recalculateBills();
+      detailVisible = false;
+      document.getElementById('itinerary-detail').classList.add('hidden');
+      document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
+      lucide.createIcons();
+    };
   </script>
 </body>
 </html>
