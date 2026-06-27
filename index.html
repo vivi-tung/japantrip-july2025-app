@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <title>🌸 東京粉色旅途 · 行程記帳</title>
+  <!-- Tailwind via CDN + 粉色日系基調 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Font Awesome 6 (免費 icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    /* 日系可愛粉彩 & 卡片細節 */
+    body {
+      background: #fef6f0;  /* 柔和奶油粉 */
+      font-family: 'Segoe UI', 'Helvetica Neue', system-ui, -apple-system, sans-serif;
+    }
+    .card-pink {
+      background: rgba(255, 245, 240, 0.7);
+      backdrop-filter: blur(2px);
+      border: 1px solid #ffdbd0;
+      border-radius: 28px;
+      box-shadow: 0 12px 28px -8px rgba(230, 140, 120, 0.18);
+    }
+    .btn-soft-pink {
+      background: #ffd9cc;
+      color: #5f3e3a;
+      border-radius: 40px;
+      padding: 10px 20px;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: none;
+      box-shadow: 0 4px 8px rgba(235, 150, 130, 0.1);
+    }
+    .btn-soft-pink:hover {
+      background: #ffcdbc;
+      transform: scale(0.97);
+    }
+    .btn-soft-pink.active {
+      background: #f7b8a3;
+      color: white;
+      box-shadow: 0 6px 12px rgba(210, 120, 100, 0.25);
+    }
+    .tag-pink {
+      background: #ffe2d9;
+      color: #754b42;
+      border-radius: 30px;
+      padding: 4px 16px;
+      font-size: 0.8rem;
+    }
+    .divider-pink {
+      border-top: 2px dashed #fad4c8;
+      opacity: 0.6;
+      margin: 1rem 0;
+    }
+    .map-link {
+      color: #b45f4a;
+      text-decoration: none;
+      border-bottom: 1px dotted #eccac0;
+    }
+    .map-link i {
+      margin-right: 4px;
+    }
+    .strikethrough-done {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    /* 手機版面內距 */
+    .app-container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 12px 80px;
+    }
+    /* 記帳卡片內數字 */
+    .currency-badge {
+      background: #fae3db;
+      border-radius: 30px;
+      padding: 2px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #6a3f37;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- 可愛標題 -->
+    <div class="flex items-center justify-between mb-4 pt-2">
+      <h1 class="text-2xl font-bold text-[#5c3e39] tracking-wide flex items-center gap-2">
+        <i class="fas fa-cherry-blossom text-[#f7a48c]"></i> 粉色旅途
+      </h1>
+      <span class="text-sm text-[#b17a6b] bg-white/60 px-4 py-1.5 rounded-full shadow-sm border border-[#fad4c8]">
+        <i class="far fa-calendar-alt mr-1"></i> 2026 · 夏
+      </span>
+    </div>
+
+    <!-- 1. 行程表：每日按鈕收納 -->
+    <section class="card-pink p-4 mb-5">
+      <div class="flex items-center gap-3 mb-3">
+        <i class="fas fa-route text-[#c48372] text-xl"></i>
+        <h2 class="text-lg font-semibold text-[#5c3e39]">🗓️ 行程收納</h2>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button 
+          v-for="(day, idx) in days" 
+          :key="idx"
+          @click="toggleDay(idx)"
+          class="btn-soft-pink text-sm px-4 py-2 flex-1 min-w-[70px]"
+          :class="{ active: day.open }"
+        >
+          <i class="fas fa-chevron-down text-[10px] mr-1" :class="{'rotate-180': day.open}"></i>
+          {{ day.label }}
+        </button>
+      </div>
+      <!-- 行程內容 (收納) -->
+      <div v-for="(day, idx) in days" :key="'content-'+idx">
+        <div v-show="day.open" class="mt-4 bg-white/60 rounded-2xl p-3 space-y-3 border border-[#fad4c8]">
+          <div class="text-sm font-bold text-[#6a4139] flex items-center gap-1">
+            <i class="fas fa-flag-checkered text-[#d6937c]"></i> {{ day.label }}
+          </div>
+          <div v-for="(step, si) in day.steps" :key="si" class="text-sm leading-relaxed border-b border-[#fae3db] pb-2 last:border-0">
+            <div class="flex items-start gap-1.5">
+              <span class="text-[#b87b6a] font-medium min-w-[20px]">{{ si+1 }}.</span>
+              <div>
+                <span class="font-medium">{{ step.from }} <i class="fas fa-arrow-right text-[#cf9b89] text-xs mx-1"></i> {{ step.to }}</span>
+                <div class="text-[#76534a] text-xs mt-0.5 flex flex-wrap items-center gap-1">
+                  <i class="fas fa-train text-[#b48a7a]"></i> {{ step.transit }}
+                  <span class="mx-1">·</span>
+                  <i class="fas fa-shoe-prints text-[#b48a7a]"></i> {{ step.walk }}
+                </div>
+                <!-- google map 連結 -->
+                <a :href="step.mapUrl" target="_blank" class="map-link text-xs inline-flex items-center mt-0.5">
+                  <i class="fas fa-map-pin"></i> 導航
+                </a>
+                <div v-if="step.exit" class="text-xs text-[#9d6f5e] mt-0.5 bg-[#fdede7] px-2 py-0.5 rounded-full inline-block">
+                  <i class="fas fa-door-open"></i> {{ step.exit }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 地圖＋文字交通 (已內嵌於行程) 額外獨立地圖摘要 -->
+    <section class="card-pink p-4 mb-5">
+      <div class="flex items-center gap-3 mb-2">
+        <i class="fas fa-map-marked-alt text-[#c48372] text-xl"></i>
+        <h2 class="text-lg font-semibold text-[#5c3e39]">📍 移動摘要</h2>
+      </div>
+      <div class="space-y-2 text-sm text-[#624a42]">
+        <div><span class="tag-pink">羽田→五反田</span> 京急空港線直達 · 無障礙電梯出口</div>
+        <div><span class="tag-pink">五反田→澀谷</span> JR山手線 · B1出口電梯</div>
+        <div><span class="tag-pink">澀谷→原宿</span> 副都心線1站 · 5號出口電梯</div>
+        <div><span class="tag-pink">原宿→表參道</span> 千代田線1站 · B1手扶梯</div>
+        <div><span class="tag-pink">橫濱移動</span> 港未來線＋市營地鐵 · 8號出口電梯</div>
+        <div><span class="tag-pink">新橫濱→池袋</span> 東急新橫濱線直通 · 地下連通道</div>
+        <div><span class="tag-pink">秋葉原→成田</span> Skyliner 36分 · 日暮里無縫電梯</div>
+      </div>
+    </section>
+
+    <!-- 3. 記帳功能 (核心) -->
+    <section class="card-pink p-4 mb-5">
+      <div class="flex items-center gap-3 mb-3">
+        <i class="fas fa-coins text-[#c48372] text-xl"></i>
+        <h2 class="text-lg font-semibold text-[#5c3e39]">🧾 記帳 · 結算</h2>
+      </div>
+      <!-- 新增記帳 -->
+      <div class="bg-white/60 rounded-2xl p-3 border border-[#fad4c8] space-y-3">
+        <div class="flex flex-wrap gap-2 items-center">
+          <input v-model="newBill.name" placeholder="項目名稱 (例: 午餐)" class="flex-1 min-w-[100px] bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm focus:outline-none" />
+          <input v-model.number="newBill.total" placeholder="總金額" class="w-20 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm focus:outline-none" />
+          <select v-model="newBill.currency" class="bg-transparent border-b border-[#eccac0] py-1 text-sm">
+            <option value="JPY">日圓</option>
+            <option value="HKD">港幣</option>
+          </select>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <input v-model="newBill.payer" placeholder="付款人" class="w-24 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm" />
+          <select v-model="newBill.splitMode" class="bg-transparent border-b border-[#eccac0] py-1 text-sm">
+            <option value="equal">人均</option>
+            <option value="custom">分開付</option>
+          </select>
+          <input v-model.number="newBill.people" placeholder="人數" class="w-16 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm" />
+          <button @click="addBill" class="btn-soft-pink text-sm px-4 py-1"><i class="fas fa-plus mr-1"></i>新增</button>
+        </div>
+        <!-- 分開付人名欄位 -->
+        <div v-if="newBill.splitMode === 'custom'" class="flex flex-wrap gap-1">
+          <span class="text-xs text-[#7d5649]">人名＆金額：</span>
+          <div v-for="(p, idx) in newBill.customItems" :key="idx" class="flex items-center gap-1 bg-[#fae3db] px-2 py-0.5 rounded-full text-xs">
+            <input v-model="p.name" placeholder="人名" class="w-12 bg-transparent border-b border-[#dbb7aa] px-1" />
+            <input v-model.number="p.amount" placeholder="¥" class="w-14 bg-transparent border-b border-[#dbb7aa] px-1" />
+            <i class="fas fa-times-circle text-[#b77a68] cursor-pointer" @click="removeCustomItem(idx)"></i>
+          </div>
+          <button @click="addCustomItem" class="text-xs text-[#b77a68]"><i class="fas fa-plus-circle"></i></button>
+        </div>
+        <div class="text-xs text-[#8e6253] flex gap-2 flex-wrap">
+          <span><i class="far fa-circle"></i> 匯率參考: 1 HKD ≈ 18.5 JPY</span>
+          <span><i class="far fa-clock"></i> 可跨日結算</span>
+        </div>
+      </div>
+
+      <!-- 記帳清單＋結算 -->
+      <div class="mt-4 space-y-3">
+        <div v-for="(bill, idx) in bills" :key="idx" class="bg-white/70 rounded-2xl p-3 border border-[#fad4c8] text-sm" :class="{'opacity-60': bill.settled}">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="font-bold text-[#5c3e39]" :class="{'line-through': bill.settled}">{{ bill.name }}</span>
+              <span class="text-[#a5705d] ml-2">{{ bill.total }} {{ bill.currency }}</span>
+              <span class="tag-pink ml-2 text-[10px]">{{ bill.payer }} 付款</span>
+              <span v-if="bill.splitMode === 'equal'" class="tag-pink ml-1 text-[10px]">人均 ¥{{ (bill.total / bill.people).toFixed(0) }}</span>
+            </div>
+            <div class="flex gap-1">
+              <button @click="toggleSettle(idx)" class="text-xs px-3 py-1 rounded-full border border-[#eccac0] bg-white/50">
+                <i class="fas" :class="bill.settled ? 'fa-check-circle text-green-600' : 'fa-circle text-[#c48372]'"></i> {{ bill.settled ? '已結清' : '標記結清' }}
+              </button>
+              <button @click="removeBill(idx)" class="text-[#b77a68]"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+          <!-- 分開付明細 -->
+          <div v-if="bill.splitMode === 'custom' && bill.customItems" class="flex flex-wrap gap-1 mt-1">
+            <span v-for="(c, ci) in bill.customItems" :key="ci" class="bg-[#f5dfd7] px-2 py-0.5 rounded-full text-xs">
+              {{ c.name }}: {{ c.amount }} {{ bill.currency }}
+            </span>
+          </div>
+          <div v-if="bill.settled" class="text-xs text-green-700 mt-1"><i class="fas fa-check-circle"></i> 結清時間: {{ bill.settleTime || '剛剛' }}</div>
+        </div>
+      </div>
+
+      <!-- 最終結算＋匯出 -->
+      <div class="mt-4 bg-white/70 rounded-2xl p-4 border border-[#fad4c8]">
+        <div class="flex justify-between items-center flex-wrap gap-2">
+          <span class="font-semibold text-[#5c3e39]"><i class="fas fa-calculator"></i> 最終帳單</span>
+          <button @click="exportSettlement" class="btn-soft-pink text-xs px-3 py-1"><i class="fas fa-file-export"></i> 匯出明細</button>
+        </div>
+        <div class="text-sm mt-2 space-y-1">
+          <div v-for="(line, li) in settlementLines" :key="li" class="flex items-center gap-2 border-b border-[#fae3db] py-1">
+            <span class="text-[#6a4139]">{{ line }}</span>
+          </div>
+          <div v-if="settlementLines.length === 0" class="text-[#b58a7a] text-xs">尚無記帳項目</div>
+          <!-- 雙幣種顯示 -->
+          <div class="flex gap-4 mt-2 text-xs bg-[#fae3db] p-2 rounded-2xl">
+            <span><i class="fas fa-yen-sign"></i> 日圓: {{ totalJPY }} JPY</span>
+            <span><i class="fas fa-dollar-sign"></i> 港幣: {{ totalHKD }} HKD</span>
+            <span class="text-[#9d6f5e]">匯率 1HKD ≈ 18.5JPY</span>
+          </div>
+        </div>
+        <!-- 結算範例 (A should pay B) -->
+        <div class="mt-2 text-sm bg-[#ffded2] p-2 rounded-2xl text-[#633d34]">
+          <i class="fas fa-hand-holding-usd"></i> 
+          <span v-if="netSettle">{{ netSettle }}</span>
+          <span v-else>記帳後自動計算互欠</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 匯率計算器 -->
+    <section class="card-pink p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <i class="fas fa-exchange-alt text-[#c48372] text-xl"></i>
+        <h2 class="text-lg font-semibold text-[#5c3e39]">💱 匯率計算器</h2>
+      </div>
+      <div class="bg-white/60 rounded-2xl p-3 flex flex-wrap gap-3 items-center">
+        <div class="flex items-center gap-1">
+          <input v-model.number="yenAmount" placeholder="日圓" class="w-24 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm" />
+          <span class="text-sm">JPY</span>
+        </div>
+        <i class="fas fa-arrow-right text-[#b48a7a]"></i>
+        <div class="flex items-center gap-1">
+          <input v-model.number="hkdAmount" placeholder="港幣" class="w-24 bg-transparent border-b border-[#eccac0] px-2 py-1 text-sm" />
+          <span class="text-sm">HKD</span>
+        </div>
+        <span class="text-xs text-[#8e6253] ml-auto">1 HKD ≈ 18.5 JPY</span>
+      </div>
+      <div class="text-xs text-[#624a42] mt-1 px-2">
+        <span v-if="yenAmount">約 {{ (yenAmount / 18.5).toFixed(2) }} HKD</span>
+        <span v-if="hkdAmount">約 {{ (hkdAmount * 18.5).toFixed(0) }} JPY</span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, watch } = Vue;
+
+    const app = createApp({
+      setup() {
+        // 行程資料 (濃縮)
+        const days = ref([
+          { label: '7/9 (四)', open: false, steps: [
+            { from: '羽田T3', to: '五反田Mystays', transit: '京急空港線直達', walk: '步行3-5m', exit: '無障礙電梯出口', mapUrl: 'https://maps.google.com/?q=羽田空港T3+to+五反田' },
+            { from: '五反田', to: '澀谷Aries', transit: 'JR山手線4站', walk: '地下道B1電梯+5-8m', exit: 'B1出口電梯', mapUrl: 'https://maps.google.com/?q=五反田+to+澀谷Aries' },
+            { from: '澀谷Aries', to: '西武澀谷', transit: '步行', walk: '5-8m', exit: '人行道', mapUrl: 'https://maps.google.com/?q=澀谷Aries+to+西武澀谷' },
+            { from: '西武澀谷', to: 'Liqumu原宿', transit: '副都心線1站', walk: '5號出口', exit: '5號出口電梯', mapUrl: 'https://maps.google.com/?q=西武澀谷+to+Liqumu' },
+            { from: 'Liqumu原宿', to: 'Ginger Garden', transit: '千代田線1站', walk: 'B1手扶梯', exit: 'B1出口', mapUrl: 'https://maps.google.com/?q=Liqumu+to+Ginger' },
+            { from: 'Ginger Garden', to: 'MO-MO-PARADISE', transit: '銀座線1站', walk: 'BEAM電梯', exit: '澀谷BEAM 6F', mapUrl: 'https://maps.google.com/?q=Ginger+to+MOMO' }
+          ]},
+          { label: '7/10 (五)', open: false, steps: [
+            { from: '五反田', to: '橫濱新格蘭', transit: 'JR山手線→湘南新宿→港未來', walk: '1號出口手扶梯', exit: '1號出口', mapUrl: 'https://maps.google.com/?q=五反田+to+橫濱新格蘭' },
+            { from: '新格蘭', to: '拉麵博物館', transit: '港未來→市營藍線', walk: '8號出口電梯', exit: '8號出口', mapUrl: 'https://maps.google.com/?q=新格蘭+to+拉麵博物館' },
+            { from: '拉麵博物館', to: '池袋Sunshine', transit: '東急新橫濱線直通', walk: '地下連通道', exit: 'Sunshine地下', mapUrl: 'https://maps.google.com/?q=拉麵博物館+to+池袋' }
+          ]},
+          { label: '7/11 (六)', open: false, steps: [
+            { from: '五反田', to: '新大久保My fave', transit: 'JR山手線', walk: '主幹道5-7m', exit: '', mapUrl: 'https://maps.google.com/?q=五反田+to+新大久保' },
+            { from: '新大久保', to: 'Laforet原宿', transit: 'JR山手線3站', walk: '表參道大道', exit: '表參道口', mapUrl: 'https://maps.google.com/?q=新大久保+to+Laforet' },
+            { from: 'Laforet', to: 'HAUTE COUTURE', transit: '步行', walk: '表參道8-10m', exit: '二樓無電梯', mapUrl: 'https://maps.google.com/?q=Laforet+to+HAUTE' }
+          ]},
+          { label: '7/12 (日)', open: false, steps: [
+            { from: '五反田', to: '秋葉原', transit: 'JR山手線', walk: '中央改札口寄物', exit: '中央改札', mapUrl: 'https://maps.google.com/?q=五反田+to+秋葉原' },
+            { from: '秋葉原', to: '成田T2', transit: '山手線→日暮里Skyliner', walk: '電梯直達', exit: 'Skyliner月台', mapUrl: 'https://maps.google.com/?q=秋葉原+to+成田' }
+          ]}
+        ]);
+
+        const toggleDay = (idx) => { days.value[idx].open = !days.value[idx].open; };
+
+        // 記帳系統
+        const bills = ref([]);
+        const newBill = ref({
+          name: '', total: 0, currency: 'JPY', payer: '', splitMode: 'equal', people: 2, customItems: []
+        });
+
+        const addBill = () => {
+          if (!newBill.value.name || !newBill.value.total || !newBill.value.payer) return alert('請填寫名稱/總額/付款人');
+          const copy = { ...newBill.value, customItems: [...newBill.value.customItems], settled: false, settleTime: null };
+          bills.value.push(copy);
+          newBill.value = { name: '', total: 0, currency: 'JPY', payer: '', splitMode: 'equal', people: 2, customItems: [] };
+        };
+        const removeBill = (idx) => { bills.value.splice(idx, 1); };
+        const toggleSettle = (idx) => {
+          const b = bills.value[idx];
+          b.settled = !b.settled;
+          if (b.settled) b.settleTime = new Date().toLocaleString();
+          else b.settleTime = null;
+        };
+        const addCustomItem = () => { newBill.value.customItems.push({ name: '', amount: 0 }); };
+        const removeCustomItem = (idx) => { newBill.value.customItems.splice(idx, 1); };
+
+        // 結算邏輯 (Vivian & Suzu 範例)
+        const settlementLines = computed(() => {
+          const lines = [];
+          let vivianPaid = 0, suzuPaid = 0, vivianShare = 0, suzuShare = 0;
+          bills.value.forEach(b => {
+            if (b.settled) return;
+            const total = b.total;
+            const payer = b.payer;
+            if (b.splitMode === 'equal') {
+              const per = total / b.people;
+              if (payer === 'Vivian') { vivianPaid += total; vivianShare += per; }
+              else if (payer === 'Suzu') { suzuPaid += total; suzuShare += per; }
+              else { /* 其他人視為各半簡化 */ }
+            } else if (b.splitMode === 'custom') {
+              b.customItems.forEach(c => {
+                if (c.name === 'Vivian') { if (payer === 'Vivian') vivianPaid += c.amount; else suzuPaid += c.amount; }
+                else if (c.name === 'Suzu') { if (payer === 'Suzu') suzuPaid += c.amount; else vivianPaid += c.amount; }
+              });
+            }
+          });
+          const diff = vivianPaid - vivianShare - (suzuPaid - suzuShare);
+          if (diff > 0) lines.push(`Vivian 應付 Suzu ${Math.abs(diff).toFixed(0)} JPY (≈${(Math.abs(diff)/18.5).toFixed(2)} HKD)`);
+          else if (diff < 0) lines.push(`Suzu 應付 Vivian ${Math.abs(diff).toFixed(0)} JPY (≈${(Math.abs(diff)/18.5).toFixed(2)} HKD)`);
+          else lines.push('✅ 雙方已平衡');
+          return lines;
+        });
+
+        const netSettle = computed(() => {
+          if (settlementLines.value.length) return settlementLines.value[0];
+          return '';
+        });
+
+        const totalJPY = computed(() => {
+          let sum = 0;
+          bills.value.forEach(b => { if (!b.settled) sum += b.currency === 'JPY' ? b.total : b.total * 18.5; });
+          return sum.toFixed(0);
+        });
+        const totalHKD = computed(() => {
+          let sum = 0;
+          bills.value.forEach(b => { if (!b.settled) sum += b.currency === 'HKD' ? b.total : b.total / 18.5; });
+          return sum.toFixed(2);
+        });
+
+        const exportSettlement = () => {
+          let text = '🌸 粉色旅途 · 最終帳單明細\n';
+          bills.value.forEach((b, i) => {
+            text += `${i+1}. ${b.name} ${b.total}${b.currency} 付款:${b.payer} ${b.settled ? '✅已結清' : '未結清'}`;
+            if (b.splitMode === 'custom') text += ` 明細:${b.customItems.map(c=>c.name+':'+c.amount).join(' ')}`;
+            text += '\n';
+          });
+          text += `\n總欠款: ${netSettle.value || '無'}`;
+          alert(text);
+        };
+
+        // 匯率計算器
+        const yenAmount = ref(0);
+        const hkdAmount = ref(0);
+        watch(yenAmount, (val) => { if (val) hkdAmount.value = (val / 18.5); });
+        watch(hkdAmount, (val) => { if (val) yenAmount.value = (val * 18.5); });
+
+        return {
+          days, toggleDay,
+          bills, newBill, addBill, removeBill, toggleSettle, addCustomItem, removeCustomItem,
+          settlementLines, netSettle, totalJPY, totalHKD, exportSettlement,
+          yenAmount, hkdAmount
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+</html>
