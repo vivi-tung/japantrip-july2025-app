@@ -279,7 +279,7 @@
       max-height: 90vh;
       overflow-y: auto;
     }
-    .edit-modal-content input, .edit-modal-content textarea {
+    .edit-modal-content input, .edit-modal-content textarea, .edit-modal-content select {
       width: 100%;
       padding: 8px 12px;
       border: 1px solid #ffd9de;
@@ -288,14 +288,25 @@
       margin-top: 4px;
     }
     .edit-modal-content label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-top: 10px; }
-    .edit-modal-content .btn-row { display: flex; gap: 10px; margin-top: 16px; }
-    .edit-modal-content .btn-row button { flex: 1; padding: 10px; border-radius: 16px; font-weight: bold; border: none; cursor: pointer; }
+    .edit-modal-content .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .edit-modal-content .btn-row button { flex: 1; padding: 10px; border-radius: 16px; font-weight: bold; border: none; cursor: pointer; min-width: 70px; }
     .edit-modal-content .btn-save { background: #f5b0a0; color: white; }
     .edit-modal-content .btn-save:hover { background: #e48070; }
     .edit-modal-content .btn-cancel { background: #f5f5f5; color: #888; }
     .edit-modal-content .btn-cancel:hover { background: #eee; }
     .edit-modal-content .btn-delete { background: #ffcdd2; color: #c62828; }
     .edit-modal-content .btn-delete:hover { background: #ef9a9a; }
+    .edit-modal-content .btn-update {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+    .edit-modal-content .btn-update:hover { background: #c8e6c9; }
+    .edit-modal-content .time-hint {
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
     .conflict-warning {
       background: #fff3e0;
       border-left: 4px solid #ff9800;
@@ -401,7 +412,6 @@
           <span class="arrow" id="flight-arrow"><i data-lucide="chevron-down" class="w-4 h-4"></i></span>
         </div>
         <div class="flight-detail" id="flight-detail">
-          <!-- 去程航班 (Day 1) - 已修正時間 -->
           <div id="flight-depart" class="flight-card" style="margin-bottom:8px;">
             <div class="flight-info">
               <span class="flight-no">UO 624</span>
@@ -411,7 +421,6 @@
             </div>
             <span class="flight-status">✅ 已確認</span>
           </div>
-          <!-- 回程航班 (Day 4) -->
           <div id="flight-return" class="flight-card">
             <div class="flight-info">
               <span class="flight-no">UO 849</span>
@@ -421,12 +430,9 @@
             </div>
             <span class="flight-status">✅ 已確認</span>
           </div>
-          <!-- 只有去程航班顯示香港出發攻略 -->
           <div id="departure-tip" class="flight-tip">
             💡 <strong>香港出發攻略：</strong> HK Express 需先到 <strong>T2</strong>（C 區）辦理登機及寄艙行李，然後乘搭接駁巴士或步行至 <strong>T1</strong> 進行安檢及登機。建議預留至少 <strong>2.5 小時</strong> 前到達機場。
           </div>
-          
-          <!-- ===== 新增：上傳電子登機牌 ===== -->
           <div class="boarding-pass-area">
             <div style="display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;">
               <span style="font-size:11px; color:#888;">🎫 電子登機牌</span>
@@ -439,7 +445,6 @@
               <div class="bp-filename" id="bp-filename"></div>
             </div>
           </div>
-          
           <div class="text-[10px] text-gray-400 text-center pt-2 border-t border-[#ffd9de] mt-2">💡 請於起飛前 2 小時到達機場辦理登機</div>
         </div>
       </div>
@@ -466,7 +471,7 @@
     </section>
 
     <section id="sec-billing" class="space-y-4 hidden">
-      <!-- 記帳部分保持不變，略 -->
+      <!-- 記帳部分保持不變 -->
       <div class="cute-card p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2">
           <h3 class="font-bold text-[#e48070] flex items-center gap-1"><i data-lucide="plus-circle" class="w-5 h-5"></i><span>新增消費</span></h3>
@@ -595,19 +600,27 @@
     </div>
   </div>
 
-  <!-- 編輯行程 Modal -->
+  <!-- 編輯行程 Modal (新增時間排序功能) -->
   <div id="edit-modal" class="edit-modal hidden" onclick="if(event.target===this) closeEditModal()">
     <div class="edit-modal-content">
       <h3 id="edit-modal-title" class="font-bold text-[#e48070] text-lg">編輯行程</h3>
-      <label>標題</label>
-      <input type="text" id="edit-title" placeholder="行程名稱">
-      <label>交通方式</label>
-      <input type="text" id="edit-transport" placeholder="例：JR山手線4站">
-      <label>小貼士</label>
-      <textarea id="edit-tips" rows="2" placeholder="行程小貼士"></textarea>
-      <label>地圖連結</label>
-      <input type="text" id="edit-map" placeholder="Google Maps 連結">
-      <label>截止時間提醒 (選填)</label>
+      <label>📍 地點名稱</label>
+      <input type="text" id="edit-title" placeholder="輸入地點名稱，如：新宿Loft">
+      <div style="margin-top:6px;">
+        <button class="btn-update" onclick="updateItineraryDetails()" style="width:100%; padding:8px; border-radius:12px; font-weight:bold; font-size:12px;">
+          🔄 更新行程詳情（自動匹配地址、導航、交通指南）
+        </button>
+      </div>
+      <label>⏰ 預計時間</label>
+      <input type="time" id="edit-time" value="12:00">
+      <div class="time-hint">💡 行程將按時間自動排序插入</div>
+      <label>🚆 交通方式</label>
+      <input type="text" id="edit-transport" placeholder="自動生成">
+      <label>💡 小貼士</label>
+      <textarea id="edit-tips" rows="2" placeholder="自動生成"></textarea>
+      <label>🗺️ 地圖連結</label>
+      <input type="text" id="edit-map" placeholder="自動生成 Google Maps 連結">
+      <label>⏰ 截止時間提醒 (選填)</label>
       <input type="text" id="edit-deadline" placeholder="例：🔔 最晚 08:40 要離開">
       <div id="edit-conflict-warning" class="conflict-warning hidden"></div>
       <div class="btn-row">
@@ -654,6 +667,113 @@
       }
     }
 
+    // ==================== 地點資料庫 ====================
+    const placeDatabase = {
+      '新宿loft': {
+        address: '東京都新宿區西新宿1-1-1 新宿ルミネ1 6F',
+        transport: 'JR山手線至新宿站，中央東口直達ルミネ1，乘電梯至6樓',
+        tips: '💡 Loft 位於新宿ルミネ1 6樓，營業時間 10:00-21:00。可順道逛新宿周邊百貨。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Shinjuku+Loft'
+      },
+      '新大久保': {
+        address: '東京都新宿區大久保1-1-1',
+        transport: 'JR山手線至新大久保站，步行約3分鐘',
+        tips: '💡 新大久保是東京的韓國城，有許多韓式料理與咖啡廳。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Shin-Okubo+Station'
+      },
+      '澀谷': {
+        address: '東京都澀谷區澀谷1-1-1',
+        transport: 'JR山手線至澀谷站，多個出口可達',
+        tips: '💡 澀谷是東京最繁忙的十字路口，周邊有眾多百貨與商店。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Shibuya+Station'
+      },
+      '原宿': {
+        address: '東京都澀谷區神宮前1-1-1',
+        transport: 'JR山手線至原宿站，表參道口出站',
+        tips: '💡 原宿是東京年輕文化與時尚的發源地，竹下通、表參道皆在此。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Harajuku+Station'
+      },
+      '池袋': {
+        address: '東京都豐島區池袋1-1-1',
+        transport: 'JR山手線至池袋站，東口或西口可達Sunshine City',
+        tips: '💡 池袋是東京三大副都心之一，Sunshine City、namco皆在此。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Ikebukuro+Station'
+      },
+      '秋葉原': {
+        address: '東京都千代田區外神田1-1-1',
+        transport: 'JR山手線至秋葉原站，電器街口出站',
+        tips: '💡 秋葉原是著名的電器街與動漫聖地，Radio會館、namco皆在此。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Akihabara+Station'
+      },
+      '五反田': {
+        address: '東京都品川區西五反田1-1-1',
+        transport: 'JR山手線至五反田站，步行約3分鐘',
+        tips: '💡 五反田站周邊有許多餐廳與飯店，交通便利。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Gotanda+Station'
+      },
+      '橫濱': {
+        address: '神奈川縣橫濱市中區新港1-1-1',
+        transport: 'JR東海道線至橫濱站，轉乘港未來線至元町中華街站',
+        tips: '💡 橫濱是東京近郊的港灣城市，中華街、紅磚倉庫為著名景點。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Yokohama+Station'
+      },
+      '日暮里': {
+        address: '東京都荒川區西日暮里1-1-1',
+        transport: 'JR山手線至日暮里站，可轉乘Skyliner往成田機場',
+        tips: '💡 日暮里站可轉乘Skyliner直達成田機場，車程約36分鐘。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Nippori+Station'
+      },
+      '成田': {
+        address: '千葉縣成田市成田機場1-1',
+        transport: 'Skyliner直達成田機場T2，約36分鐘',
+        tips: '💡 成田機場T2為國際線主要航廈，建議提前2小時到達。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Narita+Airport+Terminal+2'
+      },
+      '羽田': {
+        address: '東京都大田區羽田機場3-3-2',
+        transport: '京急空港線直達羽田機場T3，約25分鐘',
+        tips: '💡 羽田機場T3為國際線航廈，入境後可搭乘京急線往市區。',
+        map: 'https://www.google.com/maps/dir/?api=1&destination=Haneda+Airport+Terminal+3'
+      }
+    };
+
+    // ==================== 自動更新行程詳情 ====================
+    function updateItineraryDetails() {
+      const titleInput = document.getElementById('edit-title');
+      const title = titleInput.value.trim().toLowerCase();
+      
+      let matchedKey = null;
+      for (const [key, data] of Object.entries(placeDatabase)) {
+        if (title.includes(key) || key.includes(title)) {
+          matchedKey = key;
+          break;
+        }
+      }
+      
+      if (!matchedKey) {
+        for (const [key, data] of Object.entries(placeDatabase)) {
+          const keyWords = key.split(/[、，,、\s]+/);
+          for (const word of keyWords) {
+            if (title.includes(word) && word.length > 1) {
+              matchedKey = key;
+              break;
+            }
+          }
+          if (matchedKey) break;
+        }
+      }
+      
+      if (matchedKey) {
+        const data = placeDatabase[matchedKey];
+        document.getElementById('edit-transport').value = data.transport;
+        document.getElementById('edit-tips').value = data.tips;
+        document.getElementById('edit-map').value = data.map;
+        showToast(`✅ 已更新「${matchedKey}」的行程詳情`);
+      } else {
+        showToast('⚠️ 未能匹配到地點，請手動輸入詳情');
+      }
+    }
+
     // ==================== 行程資料 ====================
     let editableItineraryData = {
       1: {
@@ -661,34 +781,34 @@
         flow: "✈️ 羽田T3 ➔ 五反田飯店 ➔ 澀谷 ▶ Vivian編髮 / Suzu休息 ▶ 會合 ▶ Aries ▶ 西武澀谷 ▶ Liqumu原宿 ▶ Ginger Garden ▶ 壽喜燒晚餐",
         wakeup: "⏰ 聽日請 04:00 起身，準備出發！",
         items: [
-          { id: 'i1', title: "羽田T3 ➔ Hotel Mystays 五反田", transport: "京急空港線直達五反田站 (約25分鐘)", tips: "💡 清晨無痛攻略：入境後直衝 T3 2F TIAT Shower Room（¥1,500/30分鐘，無需預約）→ 於 Powder Room 完妝換裝 → 寄存行李於飯店。預計 08:30 前空手全妝出發！", map: "https://www.google.com/maps/dir/?api=1&origin=Haneda+Airport+Terminal+3&destination=Hotel+MyStays+Gotanda+Ekimae", deadline: "🔔 最晚 07:30 要離開機場", isReservation: false },
-          { id: 'i2', title: "澀谷站 會合點 (分開行動)", transport: "JR山手線4站至澀谷站 (約7分鐘)", tips: "出口：B1出口電梯（B1出口エレベーター）。兩人一同抵達澀谷站後，於 B1 出口附近會合點確認位置，然後分開行動。", map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Shibuya+Station", deadline: "🔔 最晚 08:40 要從五反田離開", isReservation: false,
+          { id: 'i1', title: "羽田T3 ➔ Hotel Mystays 五反田", transport: "京急空港線直達五反田站 (約25分鐘)", tips: "💡 清晨無痛攻略：入境後直衝 T3 2F TIAT Shower Room（¥1,500/30分鐘，無需預約）→ 於 Powder Room 完妝換裝 → 寄存行李於飯店。預計 08:30 前空手全妝出發！", map: "https://www.google.com/maps/dir/?api=1&origin=Haneda+Airport+Terminal+3&destination=Hotel+MyStays+Gotanda+Ekimae", deadline: "🔔 最晚 07:30 要離開機場", isReservation: false, time: "05:30" },
+          { id: 'i2', title: "澀谷站 會合點 (分開行動)", transport: "JR山手線4站至澀谷站 (約7分鐘)", tips: "出口：B1出口電梯（B1出口エレベーター）。兩人一同抵達澀谷站後，於 B1 出口附近會合點確認位置，然後分開行動。", map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Shibuya+Station", deadline: "🔔 最晚 08:40 要從五反田離開", isReservation: false, time: "08:30",
             split: {
               vivian: { label: "💇‍♀️ Vivian 前往編髮", desc: "Aries 澀谷西口店 編髮預約 (09:15)。步行約5-8分鐘，請準時到達。", map: "https://www.google.com/maps/dir/?api=1&origin=Shibuya+Station&destination=Aries+Shibuya" },
               suzu: { label: "☕ Suzu 附近休息", desc: "在澀谷站周邊悠閒度過，等待 Vivian 編髮完成。", suggestions: [{ name: "📚 澀谷 Tsutaya 書店", map: "https://www.google.com/maps/dir/?api=1&origin=Shibuya+Station&destination=Shibuya+Tsutaya" }, { name: "🛍️ 澀谷 109", map: "https://www.google.com/maps/dir/?api=1&origin=Shibuya+Station&destination=Shibuya+109" }, { name: "🌳 代代木公園", map: "https://www.google.com/maps/dir/?api=1&origin=Shibuya+Station&destination=Yoyogi+Park" }], meetup: "🤝 預計 10:30 於 Aries 店前會合" }
             }
           },
-          { id: 'i3', title: "Aries 澀谷西口店 (會合後)", transport: "步行5-8分鐘", tips: "留意行人道平整，避開地磚縫隙。此區為澀谷商業核心，人流密度極高。", map: "https://www.google.com/maps/dir/?api=1&origin=Aries+Shibuya&destination=Seibu+Shibuya", deadline: "🔔 最晚 10:30 要從Aries離開", isReservation: false },
-          { id: 'i4', title: "Aoppella 5週年特展 @ 西武澀谷", transport: "副都心線1站至明治神宮前站", tips: "出口：5號出口電梯（5番出口エレベーター）。西武百貨館內手扶梯可直達會場。", map: "https://www.google.com/maps/dir/?api=1&origin=Seibu+Shibuya&destination=Liqumu+Harajuku", deadline: "🔔 最晚 12:30 要從西武澀谷離開", isReservation: false },
-          { id: 'i5', title: "Liqumu 原宿店", transport: "千代田線1站至表參道站", tips: "出口：B1出口手扶梯（B1出口エスカレーター）。若足部已累積疲勞，強烈建議搭乘千代田線進行短程換乘。", map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA", deadline: "🔔 最晚 14:00 要從Liqumu離開", instagram: "https://www.instagram.com/liqumu/", isReservation: false },
-          { id: 'i6', title: "Ginger Garden AOYAMA (16:00 預約)", transport: "步行約10分鐘", tips: "💡 預約編號：PZUN4DN6Z9｜電話：08076152945｜2名｜¥6,800/人（含飲放題）", map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA", deadline: "🔔 最晚 15:45 要到達 Ginger Garden", instagram: "https://www.instagram.com/gingergardenaoyama/", screenshot: 'gingergarden_jpg.jpg', reservationCaption: "Ginger Garden AOYAMA 預約截圖", isReservation: true },
-          { id: 'i7', title: "壽喜燒晚餐 with 時音（餐廳待定）", transport: "銀座線1站回澀谷站", tips: "澀谷BEAM大樓電梯直達6樓。餐廳內部桌椅寬敞，高度適合高跟鞋旅客用餐後的足部釋壓。", map: "https://www.google.com/maps/dir/?api=1&origin=Ginger+Garden+AOYAMA&destination=Shibuya+Station", deadline: "🔔 最晚 18:30 要抵達澀谷", isReservation: false }
+          { id: 'i3', title: "Aries 澀谷西口店 (會合後)", transport: "步行5-8分鐘", tips: "留意行人道平整，避開地磚縫隙。此區為澀谷商業核心，人流密度極高。", map: "https://www.google.com/maps/dir/?api=1&origin=Aries+Shibuya&destination=Seibu+Shibuya", deadline: "🔔 最晚 10:30 要從Aries離開", isReservation: false, time: "10:30" },
+          { id: 'i4', title: "Aoppella 5週年特展 @ 西武澀谷", transport: "副都心線1站至明治神宮前站", tips: "出口：5號出口電梯（5番出口エレベーター）。西武百貨館內手扶梯可直達會場。", map: "https://www.google.com/maps/dir/?api=1&origin=Seibu+Shibuya&destination=Liqumu+Harajuku", deadline: "🔔 最晚 12:30 要從西武澀谷離開", isReservation: false, time: "11:00" },
+          { id: 'i5', title: "Liqumu 原宿店", transport: "千代田線1站至表參道站", tips: "出口：B1出口手扶梯（B1出口エスカレーター）。若足部已累積疲勞，強烈建議搭乘千代田線進行短程換乘。", map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA", deadline: "🔔 最晚 14:00 要從Liqumu離開", instagram: "https://www.instagram.com/liqumu/", isReservation: false, time: "12:00" },
+          { id: 'i6', title: "Ginger Garden AOYAMA (16:00 預約)", transport: "步行約10分鐘", tips: "💡 預約編號：PZUN4DN6Z9｜電話：08076152945｜2名｜¥6,800/人（含飲放題）", map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA", deadline: "🔔 最晚 15:45 要到達 Ginger Garden", instagram: "https://www.instagram.com/gingergardenaoyama/", screenshot: 'gingergarden_jpg.jpg', reservationCaption: "Ginger Garden AOYAMA 預約截圖", isReservation: true, time: "16:00" },
+          { id: 'i7', title: "壽喜燒晚餐 with 時音（餐廳待定）", transport: "銀座線1站回澀谷站", tips: "澀谷BEAM大樓電梯直達6樓。餐廳內部桌椅寬敞，高度適合高跟鞋旅客用餐後的足部釋壓。", map: "https://www.google.com/maps/dir/?api=1&origin=Ginger+Garden+AOYAMA&destination=Shibuya+Station", deadline: "🔔 最晚 18:30 要抵達澀谷", isReservation: false, time: "18:30" }
         ]
       },
       2: { date: "7月10日 (五)", flow: "五反田 ➔ 橫濱新格蘭 ➔ 拉麵博物館 ➔ 池袋Sunshine", wakeup: "⏰ 聽日請 08:00 起身，準備跨區移動！", items: [
-        { id: 'i8', title: "五反田 ➔ 橫濱新格蘭飯店", transport: "JR山手線→湘南新宿→港未來線", tips: "出口：元町中華街站1號出口手扶梯（1番出口エスカレーター）。出站後僅需平路步行1分鐘即可步入飯店大堂。", map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Hotel+New+Grand", deadline: "🔔 最晚 09:30 要從五反田離開", isReservation: false },
-        { id: 'i9', title: "新橫濱拉麵博物館", transport: "港未來線→市營藍線", tips: "出口：新橫濱站8號出口電梯（8番出口エレベーター）。站內轉乘通道較長，請跟隨無障礙指標使用電梯。", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+New+Grand&destination=Shinyokohama+Ramen+Museum", deadline: "🔔 最晚 12:00 要從新格蘭離開", isReservation: false },
-        { id: 'i10', title: "池袋 namco + Sunshine City", transport: "東急新橫濱線直通 (約40分鐘)", tips: "池袋站Sunshine地下連通道（地下連絡通路）。東口人流量極大，建議走地下通道直達太陽城。", map: "https://www.google.com/maps/dir/?api=1&origin=Shinyokohama+Ramen+Museum&destination=Ikebukuro+Station", deadline: "🔔 最晚 15:00 要從拉麵博物館離開", isReservation: false }
+        { id: 'i8', title: "五反田 ➔ 橫濱新格蘭飯店", transport: "JR山手線→湘南新宿→港未來線", tips: "出口：元町中華街站1號出口手扶梯（1番出口エスカレーター）。出站後僅需平路步行1分鐘即可步入飯店大堂。", map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Hotel+New+Grand", deadline: "🔔 最晚 09:30 要從五反田離開", isReservation: false, time: "09:30" },
+        { id: 'i9', title: "新橫濱拉麵博物館", transport: "港未來線→市營藍線", tips: "出口：新橫濱站8號出口電梯（8番出口エレベーター）。站內轉乘通道較長，請跟隨無障礙指標使用電梯。", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+New+Grand&destination=Shinyokohama+Ramen+Museum", deadline: "🔔 最晚 12:00 要從新格蘭離開", isReservation: false, time: "10:30" },
+        { id: 'i10', title: "池袋 namco + Sunshine City", transport: "東急新橫濱線直通 (約40分鐘)", tips: "池袋站Sunshine地下連通道（地下連絡通路）。東口人流量極大，建議走地下通道直達太陽城。", map: "https://www.google.com/maps/dir/?api=1&origin=Shinyokohama+Ramen+Museum&destination=Ikebukuro+Station", deadline: "🔔 最晚 15:00 要從拉麵博物館離開", isReservation: false, time: "13:00" }
       ] },
       3: { date: "7月11日 (六)", flow: "五反田 ➔ 新大久保 ➔ Laforet原宿 ➔ HAUTE COUTURE", wakeup: "⏰ 聽日請 09:00 起身，悠閒手作日！", items: [
-        { id: 'i11', title: "新大久保 My fave Café (拼製娃娃)", transport: "JR山手線直達 (約14分鐘)", tips: "沿主幹道步行5-7分鐘，避開小巷。新大久保站前街道較狹窄，平日下午人潮水泄不通。", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Shin-Okubo+Station", deadline: "🔔 最晚 09:45 要從五反田離開", isReservation: false },
-        { id: 'i12', title: "Laforet 原宿 (失憶投捕快閃店)", transport: "JR山手線3站至原宿站", tips: "出口：表參道口出站（表参道口），避開竹下通。沿著寬闊平坦的表參道大道步行。", map: "https://www.google.com/maps/dir/?api=1&origin=Shin-Okubo+Station&destination=Laforet+Harajuku", deadline: "🔔 最晚 12:00 要從新大久保離開", isReservation: false },
-        { id: 'i13', title: "HAUTE COUTURE CAFE OMOTESANDO (16:00 預約)", transport: "步行8-10分鐘", tips: "💡 預約編號：PAELZEMGUA｜電話：08076152945｜2名｜¥6,450/人（期間限定白桃Afternoon Tea）", map: "https://www.google.com/maps/dir/?api=1&origin=Laforet+Harajuku&destination=HAUTE+COUTURE+CAFE+OMOTESANDO", deadline: "🔔 最晚 15:45 要到達 HAUTE COUTURE", instagram: "https://www.instagram.com/hautecouture_brunch/", screenshot: 'haute.jpg', reservationCaption: "HAUTE COUTURE BRUNCH 預約截圖", isReservation: true }
+        { id: 'i11', title: "新大久保 My fave Café (拼製娃娃)", transport: "JR山手線直達 (約14分鐘)", tips: "沿主幹道步行5-7分鐘，避開小巷。新大久保站前街道較狹窄，平日下午人潮水泄不通。", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Shin-Okubo+Station", deadline: "🔔 最晚 09:45 要從五反田離開", isReservation: false, time: "09:45" },
+        { id: 'i12', title: "Laforet 原宿 (失憶投捕快閃店)", transport: "JR山手線3站至原宿站", tips: "出口：表參道口出站（表参道口），避開竹下通。沿著寬闊平坦的表參道大道步行。", map: "https://www.google.com/maps/dir/?api=1&origin=Shin-Okubo+Station&destination=Laforet+Harajuku", deadline: "🔔 最晚 12:00 要從新大久保離開", isReservation: false, time: "11:00" },
+        { id: 'i13', title: "HAUTE COUTURE CAFE OMOTESANDO (16:00 預約)", transport: "步行8-10分鐘", tips: "💡 預約編號：PAELZEMGUA｜電話：08076152945｜2名｜¥6,450/人（期間限定白桃Afternoon Tea）", map: "https://www.google.com/maps/dir/?api=1&origin=Laforet+Harajuku&destination=HAUTE+COUTURE+CAFE+OMOTESANDO", deadline: "🔔 最晚 15:45 要到達 HAUTE COUTURE", instagram: "https://www.instagram.com/hautecouture_brunch/", screenshot: 'haute.jpg', reservationCaption: "HAUTE COUTURE BRUNCH 預約截圖", isReservation: true, time: "16:00" }
       ] },
       4: { date: "7月12日 (日)", flow: "五反田 ➔ 秋葉原 (寄存) ➔ 日暮里 ➔ 成田T2", wakeup: "⏰ 聽日請 08:30 起身，準備返程！", items: [
-        { id: 'i14', title: "五反田 ➔ 秋葉原 (行李寄存)", transport: "JR山手線外環 (約18分鐘)", tips: "💡 零拖行秘訣：秋葉原站內中央改札口區域設有全東京最大規模智慧型電子置物櫃（支援Suica）。將大行李箱存入後，空手輕鬆穿高跟鞋逛街！", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Akihabara+Station", deadline: "🔔 最晚 10:30 要從五反田離開", isReservation: false },
-        { id: 'i15', title: "秋葉原補貨 (Radio會館 / namco)", transport: "步行1-2分鐘", tips: "空手穿高跟鞋能極大提升在電氣街搜刮周邊的戰鬥力。中午12:45前完成所有補貨。", map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Akihabara+Radio+Kaikan", deadline: "🔔 最晚 12:45 要取回行李", isReservation: false },
-        { id: 'i16', title: "秋葉原 ➔ 日暮里 ➔ 成田T2", transport: "山手線→日暮里Skyliner (約36分鐘)", tips: "日暮里站無縫電梯轉乘（日暮里駅エレベーター乗り換え）。站內動線完全平整，設有專用大型電梯直達Skyliner月台。", map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Keisei-Ueno+Station", deadline: "🔔 最晚 13:00 要從秋葉原離開", isReservation: false }
+        { id: 'i14', title: "五反田 ➔ 秋葉原 (行李寄存)", transport: "JR山手線外環 (約18分鐘)", tips: "💡 零拖行秘訣：秋葉原站內中央改札口區域設有全東京最大規模智慧型電子置物櫃（支援Suica）。將大行李箱存入後，空手輕鬆穿高跟鞋逛街！", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Akihabara+Station", deadline: "🔔 最晚 10:30 要從五反田離開", isReservation: false, time: "10:30" },
+        { id: 'i15', title: "秋葉原補貨 (Radio會館 / namco)", transport: "步行1-2分鐘", tips: "空手穿高跟鞋能極大提升在電氣街搜刮周邊的戰鬥力。中午12:45前完成所有補貨。", map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Akihabara+Radio+Kaikan", deadline: "🔔 最晚 12:45 要取回行李", isReservation: false, time: "11:00" },
+        { id: 'i16', title: "秋葉原 ➔ 日暮里 ➔ 成田T2", transport: "山手線→日暮里Skyliner (約36分鐘)", tips: "日暮里站無縫電梯轉乘（日暮里駅エレベーター乗り換え）。站內動線完全平整，設有專用大型電梯直達Skyliner月台。", map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Keisei-Ueno+Station", deadline: "🔔 最晚 13:00 要從秋葉原離開", isReservation: false, time: "13:00" }
       ] }
     };
 
@@ -701,10 +821,9 @@
     let settlementHistory = [];
     let receiptItems = [];
     let receiptTotal = 0;
-
-    // ===== 登機牌上傳 =====
     let boardingPassData = null;
 
+    // ==================== 登機牌上傳 ====================
     function uploadBoardingPass(file) {
       if (!file) return;
       const reader = new FileReader();
@@ -716,10 +835,7 @@
         previewImg.src = boardingPassData;
         previewContainer.style.display = 'block';
         filenameEl.textContent = `📎 ${file.name}`;
-        // 儲存到 localStorage
-        try {
-          localStorage.setItem('boardingPass', boardingPassData);
-        } catch (e) { /* ignore */ }
+        try { localStorage.setItem('boardingPass', boardingPassData); } catch (e) { /* ignore */ }
         showToast('✅ 登機牌已上傳');
       };
       reader.readAsDataURL(file);
@@ -730,9 +846,7 @@
       document.getElementById('bp-preview-container').style.display = 'none';
       document.getElementById('bp-preview-img').src = '';
       document.getElementById('bp-filename').textContent = '';
-      try {
-        localStorage.removeItem('boardingPass');
-      } catch (e) { /* ignore */ }
+      try { localStorage.removeItem('boardingPass'); } catch (e) { /* ignore */ }
       showToast('🗑️ 登機牌已移除');
     }
 
@@ -782,10 +896,20 @@
       else { tip.textContent = '☀️ 無需帶傘'; tip.className = 'umbrella-tip'; }
     }
 
-    // ==================== 行程渲染 ====================
+    // ==================== 行程渲染 (按時間排序) ====================
     function renderItinerary() {
       const data = editableItineraryData[currentDay];
       if (!data) return;
+      
+      // 按時間排序
+      data.items.sort((a, b) => {
+        const timeA = a.time || '00:00';
+        const timeB = b.time || '00:00';
+        return timeA.localeCompare(timeB);
+      });
+      
+      // 更新 flow
+      updateFlowText(currentDay);
       
       document.getElementById('route-flow').innerText = data.flow;
       document.getElementById('wakeup-tip').innerHTML = data.wakeup;
@@ -810,6 +934,9 @@
 
         const editBtns = `<div class="flex gap-1 mt-1"><span class="edit-btn" onclick="openEditModal('${item.id}', ${currentDay})">✏️ 編輯</span></div>`;
 
+        // 顯示時間
+        const timeDisplay = item.time ? `<div class="text-[10px] text-gray-400 font-medium">⏰ ${item.time}</div>` : '';
+        
         let deadlineHtml = '';
         if (item.deadline) {
           deadlineHtml = `<div class="deadline-plain">${item.deadline}</div>`;
@@ -858,7 +985,10 @@
           <div class="flex items-start justify-between gap-2">
             <div class="flex items-start gap-2">
               <span class="bg-[#f5b0a0] text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">${idx+1}</span>
-              <h4 class="font-bold text-gray-800 text-sm">${item.title} ${item.isReservation ? '⭐' : ''}</h4>
+              <div>
+                <h4 class="font-bold text-gray-800 text-sm">${item.title} ${item.isReservation ? '⭐' : ''}</h4>
+                ${timeDisplay}
+              </div>
             </div>
             ${editBtns}
           </div>
@@ -905,7 +1035,7 @@
       }
     }
 
-    // ==================== 編輯功能 ====================
+    // ==================== 編輯功能 (支援時間排序) ====================
     let editingItem = null;
 
     function openEditModal(itemId, day) {
@@ -918,6 +1048,7 @@
       
       document.getElementById('edit-modal-title').textContent = `✏️ 編輯行程`;
       document.getElementById('edit-title').value = item.title || '';
+      document.getElementById('edit-time').value = item.time || '12:00';
       document.getElementById('edit-transport').value = item.transport || '';
       document.getElementById('edit-tips').value = item.tips || '';
       document.getElementById('edit-map').value = item.map || '';
@@ -933,6 +1064,7 @@
       editingDay = currentDay;
       document.getElementById('edit-modal-title').textContent = '➕ 新增行程';
       document.getElementById('edit-title').value = '';
+      document.getElementById('edit-time').value = '12:00';
       document.getElementById('edit-transport').value = '';
       document.getElementById('edit-tips').value = '';
       document.getElementById('edit-map').value = '';
@@ -950,6 +1082,7 @@
 
     function saveEditItem() {
       const title = document.getElementById('edit-title').value.trim();
+      const time = document.getElementById('edit-time').value || '12:00';
       const transport = document.getElementById('edit-transport').value.trim();
       const tips = document.getElementById('edit-tips').value.trim();
       const map = document.getElementById('edit-map').value.trim();
@@ -963,6 +1096,7 @@
         const item = data.items.find(i => i.id === editingItemId);
         if (item) {
           item.title = title;
+          item.time = time;
           item.transport = transport || '步行';
           item.tips = tips || '💡 請參考導航';
           item.map = map || '#';
@@ -972,6 +1106,7 @@
         const newItem = {
           id: 'i' + Date.now().toString(),
           title: title,
+          time: time,
           transport: transport || '步行',
           tips: tips || '💡 請參考導航',
           map: map || '#',
@@ -980,6 +1115,13 @@
         };
         data.items.push(newItem);
       }
+      
+      // 重新排序
+      data.items.sort((a, b) => {
+        const timeA = a.time || '00:00';
+        const timeB = b.time || '00:00';
+        return timeA.localeCompare(timeB);
+      });
       
       updateFlowText(editingDay);
       closeEditModal();
@@ -1004,7 +1146,13 @@
     function updateFlowText(day) {
       const data = editableItineraryData[day];
       if (!data) return;
-      const titles = data.items.map(i => i.title).join(' ➔ ');
+      // 按時間排序後生成 flow
+      const sorted = [...data.items].sort((a, b) => {
+        const timeA = a.time || '00:00';
+        const timeB = b.time || '00:00';
+        return timeA.localeCompare(timeB);
+      });
+      const titles = sorted.map(i => i.title).join(' ➔ ');
       data.flow = titles;
     }
 
@@ -1505,7 +1653,6 @@
       document.getElementById('itinerary-detail').classList.add('hidden');
       document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
       toggleSplitUI();
-      // 載入已儲存的登機牌
       loadBoardingPassFromStorage();
       lucide.createIcons();
     };
