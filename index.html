@@ -6,6 +6,8 @@
   <title>✨ 東京推活之旅</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Noto+Sans+TC:wght@400;500;700&display=swap');
     * { font-family: 'Kosugi Maru', 'Noto Sans TC', sans-serif; }
@@ -31,11 +33,308 @@
     .reservation-modal-content { background: white; border-radius: 28px; max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
     .reservation-modal-content img { width: 100%; border-radius: 16px; margin-top: 8px; }
     .close-btn { position: sticky; top: 0; float: right; background: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10; }
+    #export-container {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 600px;
+      background: white;
+      padding: 30px 25px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      font-size: 13px;
+      z-index: 9999;
+      font-family: 'Kosugi Maru', 'Noto Sans TC', sans-serif;
+    }
+    #export-container .export-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #e48070;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    #export-container .export-sub {
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 16px;
+      border-bottom: 2px dashed #ffd9de;
+      padding-bottom: 12px;
+    }
+    #export-container .export-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #f5f0f0;
+      font-size: 12px;
+    }
+    #export-container .export-item .left { color: #555; }
+    #export-container .export-item .right { font-weight: 600; color: #333; }
+    #export-container .export-total {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 2px solid #e48070;
+      font-weight: bold;
+      text-align: center;
+      font-size: 16px;
+      color: #e48070;
+    }
+    #export-container .export-history-title {
+      margin-top: 18px;
+      font-weight: bold;
+      color: #b87370;
+      font-size: 14px;
+      border-bottom: 1px solid #ffd9de;
+      padding-bottom: 4px;
+    }
+    #export-container .export-history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 11px;
+      color: #777;
+      border-bottom: 1px dashed #f5f0f0;
+    }
+    #export-container .export-footer {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 11px;
+      color: #ccc;
+    }
+    .split-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .split-col {
+      flex: 1;
+      background: #f8f5f6;
+      border-radius: 16px;
+      padding: 10px 12px;
+      border: 1px solid #ffe3e8;
+    }
+    .split-col .label {
+      font-size: 10px;
+      font-weight: bold;
+      color: #e48070;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .split-col .desc {
+      font-size: 11px;
+      color: #555;
+      line-height: 1.5;
+    }
+    .suggest-toggle {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 10px;
+      color: #b87370;
+      cursor: pointer;
+      text-decoration: underline dotted;
+      font-weight: 500;
+    }
+    .suggest-toggle:hover { color: #e48070; }
+    .suggest-list {
+      margin-top: 6px;
+      padding-left: 6px;
+      display: none;
+      font-size: 10px;
+      color: #666;
+      border-left: 2px solid #ffd9de;
+      padding-left: 10px;
+    }
+    .suggest-list.show { display: block; }
+    .suggest-list .s-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 0;
+      border-bottom: 1px dashed #f5f0f0;
+    }
+    .suggest-list .s-item .name { font-weight: 500; color: #555; }
+    .suggest-list .s-item a { color: #e48070; font-size: 9px; text-decoration: none; background: #fdf0f2; padding: 1px 8px; border-radius: 10px; }
+    .suggest-list .s-item a:hover { background: #ffd9de; }
+    .meetup-note {
+      font-size: 10px;
+      color: #b87370;
+      background: #fdf0f2;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-top: 4px;
+      border: 1px dashed #ffd9de;
+    }
+    .weather-card {
+      background: linear-gradient(135deg, #fdf0f2 0%, #fff5f6 100%);
+      border: 1px solid #ffd9de;
+      border-radius: 18px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .weather-card .temp { font-size: 28px; font-weight: bold; color: #e48070; }
+    .weather-card .desc { font-size: 13px; color: #555; }
+    .weather-card .umbrella-tip { font-size: 11px; padding: 3px 12px; border-radius: 20px; background: #e8f5e9; color: #2e7d32; font-weight: 500; }
+    .weather-card .umbrella-tip.warning { background: #fff3e0; color: #e65100; }
+    .flight-card {
+      background: white;
+      border: 1px solid #ffd9de;
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .flight-card .flight-info { display: flex; flex-direction: column; gap: 2px; }
+    .flight-card .flight-no { font-weight: bold; font-size: 14px; color: #4d3a35; }
+    .flight-card .flight-route { font-size: 12px; color: #888; }
+    .flight-card .flight-time { font-size: 12px; color: #555; font-weight: 500; }
+    .flight-card .flight-status { font-size: 10px; padding: 2px 10px; border-radius: 12px; background: #e8f5e9; color: #2e7d32; }
+    .flight-section.hidden { display: none; }
+    .flight-toggle {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+    .flight-toggle .arrow { transition: transform 0.3s; }
+    .flight-toggle .arrow.open { transform: rotate(180deg); }
+    .flight-detail { display: none; padding-top: 8px; border-top: 1px dashed #ffd9de; }
+    .flight-detail.open { display: block; }
+    .flight-tip {
+      background: #fdf0f2;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #555;
+      margin-top: 6px;
+      border-left: 3px solid #e48070;
+    }
+    .boarding-pass-area {
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: #f8f5f6;
+      border-radius: 12px;
+      border: 1px dashed #ffd9de;
+      text-align: center;
+    }
+    .boarding-pass-area .upload-btn {
+      display: inline-block;
+      padding: 6px 16px;
+      background: #f5b0a0;
+      color: white;
+      border-radius: 20px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .boarding-pass-area .upload-btn:hover { background: #e48070; }
+    .boarding-pass-area input[type="file"] { display: none; }
+    .boarding-pass-area .bp-preview {
+      max-width: 100%;
+      max-height: 120px;
+      border-radius: 8px;
+      margin-top: 6px;
+      border: 1px solid #ffd9de;
+    }
+    .boarding-pass-area .bp-filename {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+    }
+    .edit-btn {
+      font-size: 10px;
+      color: #b87370;
+      cursor: pointer;
+      background: #fdf0f2;
+      padding: 2px 10px;
+      border-radius: 12px;
+      border: 1px solid #ffd9de;
+      transition: all 0.2s;
+    }
+    .edit-btn:hover { background: #ffd9de; color: #e48070; }
+    .edit-btn.danger:hover { background: #ffcdd2; color: #c62828; border-color: #ef9a9a; }
+    .edit-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    .edit-modal-content {
+      background: white;
+      border-radius: 28px;
+      max-width: 420px;
+      width: 100%;
+      padding: 24px 20px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .edit-modal-content input, .edit-modal-content textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ffd9de;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .edit-modal-content label { font-size: 12px; font-weight: bold; color: #555; display: block; margin-top: 10px; }
+    .edit-modal-content .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+    .edit-modal-content .btn-row button { flex: 1; padding: 10px; border-radius: 16px; font-weight: bold; border: none; cursor: pointer; }
+    .edit-modal-content .btn-save { background: #f5b0a0; color: white; }
+    .edit-modal-content .btn-save:hover { background: #e48070; }
+    .edit-modal-content .btn-cancel { background: #f5f5f5; color: #888; }
+    .edit-modal-content .btn-cancel:hover { background: #eee; }
+    .edit-modal-content .btn-delete { background: #ffcdd2; color: #c62828; }
+    .edit-modal-content .btn-delete:hover { background: #ef9a9a; }
+    .conflict-warning {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #e65100;
+      margin-top: 8px;
+    }
+    .receipt-upload-area {
+      border: 2px dashed #ffd9de;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #fdf0f2;
+    }
+    .receipt-upload-area:hover { background: #fff5f6; border-color: #f5b0a0; }
+    .receipt-upload-area input[type="file"] { display: none; }
+    .receipt-items-list { max-height: 200px; overflow-y: auto; }
+    .receipt-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-bottom: 1px solid #f5f0f0;
+      font-size: 12px;
+    }
+    .receipt-item input[type="checkbox"] { accent-color: #f5b0a0; width: 16px; height: 16px; }
+    .receipt-item .item-name { flex: 1; color: #555; }
+    .receipt-item .item-price { font-weight: bold; color: #e48070; min-width: 60px; text-align: right; }
+    .receipt-item .member-select { font-size: 10px; padding: 2px 6px; border-radius: 8px; border: 1px solid #ffd9de; background: white; }
+    .ocr-loading { display: none; text-align: center; padding: 12px; color: #b87370; font-size: 13px; }
+    .ocr-loading.show { display: block; }
   </style>
 </head>
 <body>
 
-  <!-- 頂部導航 -->
   <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b-2 border-[#ffd9de] px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-2">
       <span class="text-2xl">✨</span>
@@ -49,7 +348,6 @@
 
   <main class="max-w-md mx-auto px-4 mt-4 space-y-6">
 
-    <!-- 分頁 -->
     <div class="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-2xl border border-[#ffd9de] shadow-sm">
       <button onclick="switchTab('itinerary')" id="tab-itinerary" class="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5">
         <i data-lucide="calendar" class="w-4 h-4"></i><span>行程表</span>
@@ -62,9 +360,7 @@
       </button>
     </div>
 
-    <!-- ============ 行程表 ============ -->
     <section id="sec-itinerary" class="space-y-4">
-      <!-- 日期按鈕 -->
       <div class="flex gap-2 overflow-x-auto no-scrollbar py-2">
         <button onclick="switchDay(1)" id="day-btn-1" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm day-btn-active">
           <p class="text-xs text-opacity-80">Day 1</p>
@@ -84,7 +380,70 @@
         </button>
       </div>
 
-      <!-- 行程簡介 (摺疊式) -->
+      <div class="weather-card" id="weather-card">
+        <div>
+          <div class="desc" id="weather-desc">☀️ 晴天</div>
+          <div class="temp" id="weather-temp">28°C</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;color:#888;" id="weather-location">📍 東京</div>
+          <div class="umbrella-tip" id="umbrella-tip">☂️ 無需帶傘</div>
+        </div>
+      </div>
+
+      <!-- 航班資訊 -->
+      <div id="flight-section" class="cute-card p-4 space-y-2">
+        <div class="flight-toggle" onclick="toggleFlightDetail()">
+          <div class="flex items-center gap-2">
+            <i data-lucide="plane" class="w-4 h-4 text-[#e48070]"></i>
+            <span class="text-sm font-bold text-[#e48070]">✈️ 航班資訊</span>
+          </div>
+          <span class="arrow" id="flight-arrow"><i data-lucide="chevron-down" class="w-4 h-4"></i></span>
+        </div>
+        <div class="flight-detail" id="flight-detail">
+          <!-- 去程航班 (Day 1) - 已修正時間 -->
+          <div id="flight-depart" class="flight-card" style="margin-bottom:8px;">
+            <div class="flight-info">
+              <span class="flight-no">UO 624</span>
+              <span class="flight-route">香港 (HKG) → 東京羽田 (HND)</span>
+              <span class="flight-time">🛫 23:35 (HKT) · 🛬 05:00 (JST) 翌日</span>
+              <span style="font-size:10px;color:#888;">🧳 香港出發：T2 辦理登機 → T1 登機</span>
+            </div>
+            <span class="flight-status">✅ 已確認</span>
+          </div>
+          <!-- 回程航班 (Day 4) -->
+          <div id="flight-return" class="flight-card">
+            <div class="flight-info">
+              <span class="flight-no">UO 849</span>
+              <span class="flight-route">東京羽田 (HND) → 香港 (HKG)</span>
+              <span class="flight-time">🛫 16:55 (JST) · 🛬 20:35 (HKT)</span>
+              <span style="font-size:10px;color:#888;">🧳 羽田機場：T3 國際線出境</span>
+            </div>
+            <span class="flight-status">✅ 已確認</span>
+          </div>
+          <!-- 只有去程航班顯示香港出發攻略 -->
+          <div id="departure-tip" class="flight-tip">
+            💡 <strong>香港出發攻略：</strong> HK Express 需先到 <strong>T2</strong>（C 區）辦理登機及寄艙行李，然後乘搭接駁巴士或步行至 <strong>T1</strong> 進行安檢及登機。建議預留至少 <strong>2.5 小時</strong> 前到達機場。
+          </div>
+          
+          <!-- ===== 新增：上傳電子登機牌 ===== -->
+          <div class="boarding-pass-area">
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;">
+              <span style="font-size:11px; color:#888;">🎫 電子登機牌</span>
+              <span class="upload-btn" onclick="document.getElementById('bp-file-input').click()">📤 上傳圖片</span>
+              <input type="file" id="bp-file-input" accept="image/*" onchange="uploadBoardingPass(this.files[0])">
+              <span class="upload-btn" style="background:#eee; color:#888;" onclick="removeBoardingPass()">🗑️ 移除</span>
+            </div>
+            <div id="bp-preview-container" style="display:none; margin-top:6px;">
+              <img id="bp-preview-img" class="bp-preview" alt="登機牌預覽">
+              <div class="bp-filename" id="bp-filename"></div>
+            </div>
+          </div>
+          
+          <div class="text-[10px] text-gray-400 text-center pt-2 border-t border-[#ffd9de] mt-2">💡 請於起飛前 2 小時到達機場辦理登機</div>
+        </div>
+      </div>
+
       <div class="bg-gradient-to-r from-[#fdf0f2] to-[#fff5f6] p-4 rounded-2xl border border-[#ffd9de] relative overflow-hidden cursor-pointer" onclick="toggleDetail()">
         <div class="absolute -right-6 -bottom-6 text-6xl opacity-10">✨</div>
         <div class="flex items-center justify-between">
@@ -95,16 +454,19 @@
         </div>
         <div id="route-flow" class="text-xs leading-relaxed text-gray-600 font-medium mt-1"></div>
         <div id="wakeup-tip" class="text-xs text-[#e48070] font-bold mt-1"></div>
+        <div id="conflict-warning" class="conflict-warning hidden"></div>
       </div>
 
-      <!-- 詳細行程卡片 -->
       <div id="itinerary-detail" class="space-y-4 hidden">
         <div id="itinerary-cards" class="space-y-4"></div>
+        <button onclick="openAddItemModal()" class="w-full py-3 rounded-2xl border-2 border-dashed border-[#ffd9de] text-[#e48070] font-bold text-sm hover:bg-[#fdf0f2] transition-all flex items-center justify-center gap-2">
+          <i data-lucide="plus" class="w-4 h-4"></i> 新增行程
+        </button>
       </div>
     </section>
 
-    <!-- ============ 多人記帳 ============ -->
     <section id="sec-billing" class="space-y-4 hidden">
+      <!-- 記帳部分保持不變，略 -->
       <div class="cute-card p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2">
           <h3 class="font-bold text-[#e48070] flex items-center gap-1"><i data-lucide="plus-circle" class="w-5 h-5"></i><span>新增消費</span></h3>
@@ -143,6 +505,7 @@
             <select id="bill-split-type" onchange="toggleSplitUI()" class="w-full px-3 py-2 rounded-xl border border-[#ffd9de] text-sm bg-white">
               <option value="equal">人均均分</option>
               <option value="custom">分開付</option>
+              <option value="receipt">📸 單據掃描分帳</option>
             </select>
           </div>
         </div>
@@ -155,6 +518,17 @@
           <p class="text-[11px] text-[#e48070] font-bold">各自應付金額：</p>
           <div class="flex items-center gap-2"><span class="text-xs font-bold w-16">Vivian</span><input type="number" id="split-val-vivian" placeholder="金額" class="flex-1 px-3 py-1.5 rounded-lg border border-[#ffd9de] text-xs"></div>
           <div class="flex items-center gap-2"><span class="text-xs font-bold w-16">Suzu</span><input type="number" id="split-val-suzu" placeholder="金額" class="flex-1 px-3 py-1.5 rounded-lg border border-[#ffd9de] text-xs"></div>
+        </div>
+        <div id="split-receipt-ui" class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] space-y-3 hidden">
+          <p class="text-[11px] text-[#e48070] font-bold">📸 上傳單據 / 拍攝照片</p>
+          <div class="receipt-upload-area" onclick="document.getElementById('receipt-file-input').click()">
+            <i data-lucide="camera" class="w-6 h-6 text-[#e48070] mx-auto"></i>
+            <p class="text-xs text-gray-500 mt-1">點擊上傳或拍攝單據</p>
+            <input type="file" id="receipt-file-input" accept="image/*" capture="environment" onchange="processReceiptImage(this.files[0])">
+          </div>
+          <div class="ocr-loading" id="ocr-loading">🔍 正在辨識單據內容...</div>
+          <div class="receipt-items-list" id="receipt-items-list"></div>
+          <button onclick="applyReceiptItems()" class="w-full bg-[#f5b0a0] hover:bg-[#e48070] text-white py-2 rounded-xl text-sm font-bold transition-all mt-2">✅ 套用勾選項目</button>
         </div>
         <button onclick="addBillItem()" class="w-full bg-[#f5b0a0] hover:bg-[#e48070] text-white py-2.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
           <i data-lucide="plus" class="w-4 h-4"></i><span>加入帳單</span>
@@ -186,32 +560,32 @@
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <button onclick="exportToClipboard()" class="bg-[#f5b0a0] hover:bg-[#e48070] text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 shadow"><i data-lucide="copy" class="w-3.5 h-3.5"></i>複製明細</button>
+          <button onclick="exportAsImage()" class="bg-[#f5b0a0] hover:bg-[#e48070] text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 shadow"><i data-lucide="image" class="w-3.5 h-3.5"></i>匯出圖片</button>
           <button onclick="clearAllBills()" class="border border-red-300 text-red-500 hover:bg-red-50 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>清空帳單</button>
         </div>
       </div>
       <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">訊息</div>
     </section>
 
-    <!-- ============ 匯率轉換 ============ -->
     <section id="sec-rate" class="space-y-4 hidden">
       <div class="cute-card p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2">
           <h3 class="font-bold text-[#e48070] flex items-center gap-1"><i data-lucide="refresh-cw" class="w-5 h-5"></i><span>匯率計算器 JPY ⇄ HKD</span></h3>
+          <span id="rate-update-time" class="text-[10px] text-gray-400"></span>
         </div>
         <div class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] flex justify-between text-xs text-gray-500">
-          <span>1 JPY = <strong class="text-[#e48070]">0.0520</strong> HKD</span>
-          <span>1 HKD = <strong class="text-[#e48070]">19.23</strong> JPY</span>
+          <span>1 JPY = <strong id="rate-jpy-to-hkd" class="text-[#e48070]">--</strong> HKD</span>
+          <span>1 HKD = <strong id="rate-hkd-to-jpy" class="text-[#e48070]">--</strong> JPY</span>
         </div>
         <div><label class="text-xs font-bold text-gray-500">日圓 (JPY)</label><input type="number" id="calc-jpy" value="10000" oninput="convertCurrency('jpy')" class="w-full px-3 py-2.5 rounded-xl border border-[#ffd9de] font-bold"></div>
         <div class="flex justify-center -my-2"><div class="bg-[#f5b0a0] text-white p-2 rounded-full shadow-md"><i data-lucide="arrow-up-down" class="w-4 h-4"></i></div></div>
         <div><label class="text-xs font-bold text-gray-500">港幣 (HKD)</label><input type="number" id="calc-hkd" value="520" oninput="convertCurrency('hkd')" class="w-full px-3 py-2.5 rounded-xl border border-[#ffd9de] font-bold"></div>
+        <button onclick="fetchRealTimeRate()" class="w-full bg-[#f5b0a0] hover:bg-[#e48070] text-white py-2 rounded-xl text-sm font-bold transition-all">🔄 更新實時匯率</button>
       </div>
     </section>
 
   </main>
 
-  <!-- 預約詳情 Modal -->
   <div id="reservation-modal" class="reservation-modal hidden" onclick="if(event.target===this) closeReservation()">
     <div class="reservation-modal-content">
       <div class="close-btn" onclick="closeReservation()">✕</div>
@@ -221,169 +595,420 @@
     </div>
   </div>
 
-  <script>
-    // ==================== 資料 ====================
-    const JPY_TO_HKD_RATE = 0.052;
+  <!-- 編輯行程 Modal -->
+  <div id="edit-modal" class="edit-modal hidden" onclick="if(event.target===this) closeEditModal()">
+    <div class="edit-modal-content">
+      <h3 id="edit-modal-title" class="font-bold text-[#e48070] text-lg">編輯行程</h3>
+      <label>標題</label>
+      <input type="text" id="edit-title" placeholder="行程名稱">
+      <label>交通方式</label>
+      <input type="text" id="edit-transport" placeholder="例：JR山手線4站">
+      <label>小貼士</label>
+      <textarea id="edit-tips" rows="2" placeholder="行程小貼士"></textarea>
+      <label>地圖連結</label>
+      <input type="text" id="edit-map" placeholder="Google Maps 連結">
+      <label>截止時間提醒 (選填)</label>
+      <input type="text" id="edit-deadline" placeholder="例：🔔 最晚 08:40 要離開">
+      <div id="edit-conflict-warning" class="conflict-warning hidden"></div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeEditModal()">取消</button>
+        <button class="btn-delete" id="edit-delete-btn" onclick="deleteCurrentItem()">刪除</button>
+        <button class="btn-save" onclick="saveEditItem()">儲存</button>
+      </div>
+    </div>
+  </div>
 
-    // 行程資料 (screenshot 檔名已更新)
-    const itineraryData = {
+  <div id="export-container">
+    <div class="export-title">✨ 東京推活之旅 · 結帳對帳單</div>
+    <div class="export-sub" id="export-date">日期: 2026/06/28</div>
+    <div id="export-items-list"></div>
+    <div id="export-history-section">
+      <div class="export-history-title">📋 歷史結算記錄</div>
+      <div id="export-history-list"></div>
+    </div>
+    <div class="export-total" id="export-total-text">👌 完美平衡！</div>
+    <div class="export-footer">💖 推活愉快！</div>
+  </div>
+
+  <script>
+    // ==================== 實時匯率 ====================
+    let currentRate = 0.052;
+
+    async function fetchRealTimeRate() {
+      try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
+        const data = await response.json();
+        if (data.rates && data.rates.HKD) {
+          currentRate = data.rates.HKD;
+          document.getElementById('rate-jpy-to-hkd').textContent = currentRate.toFixed(4);
+          document.getElementById('rate-hkd-to-jpy').textContent = (1/currentRate).toFixed(2);
+          document.getElementById('rate-update-time').textContent = `更新: ${new Date().toLocaleTimeString()}`;
+          document.getElementById('settle-rate').value = currentRate;
+          recalculateBills();
+          showToast('✅ 匯率已更新');
+        }
+      } catch (e) {
+        console.warn('匯率 API 獲取失敗，使用默認值', e);
+        document.getElementById('rate-jpy-to-hkd').textContent = '0.0520';
+        document.getElementById('rate-hkd-to-jpy').textContent = '19.23';
+      }
+    }
+
+    // ==================== 行程資料 ====================
+    let editableItineraryData = {
       1: {
         date: "7月9日 (四)",
-        flow: "✈️ 羽田T3 ➔ 五反田飯店 ➔ 澀谷編髮 ➔ Aries ➔ 西武澀谷 ➔ Liqumu原宿 ➔ Ginger Garden ➔ 壽喜燒晚餐",
+        flow: "✈️ 羽田T3 ➔ 五反田飯店 ➔ 澀谷 ▶ Vivian編髮 / Suzu休息 ▶ 會合 ▶ Aries ▶ 西武澀谷 ▶ Liqumu原宿 ▶ Ginger Garden ▶ 壽喜燒晚餐",
         wakeup: "⏰ 聽日請 04:00 起身，準備出發！",
         items: [
-          { 
-            title: "羽田T3 ➔ Hotel Mystays 五反田", 
-            transport: "京急空港線直達五反田站 (約25分鐘)", 
-            tips: "💡 清晨無痛攻略：入境後直衝 T3 2F TIAT Shower Room（¥1,500/30分鐘，無需預約）→ 於 Powder Room 完妝換裝 → 寄存行李於飯店。預計 08:30 前空手全妝出發！",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Haneda+Airport+Terminal+3&destination=Hotel+MyStays+Gotanda+Ekimae",
-            deadline: "🔔 最晚 07:30 要離開機場"
+          { id: 'i1', title: "羽田T3 ➔ Hotel Mystays 五反田", transport: "京急空港線直達五反田站 (約25分鐘)", tips: "💡 清晨無痛攻略：入境後直衝 T3 2F TIAT Shower Room（¥1,500/30分鐘，無需預約）→ 於 Powder Room 完妝換裝 → 寄存行李於飯店。預計 08:30 前空手全妝出發！", map: "https://www.google.com/maps/dir/?api=1&origin=Haneda+Airport+Terminal+3&destination=Hotel+MyStays+Gotanda+Ekimae", deadline: "🔔 最晚 07:30 要離開機場", isReservation: false },
+          { id: 'i2', title: "澀谷站 會合點 (分開行動)", transport: "JR山手線4站至澀谷站 (約7分鐘)", tips: "出口：B1出口電梯（B1出口エレベーター）。兩人一同抵達澀谷站後，於 B1 出口附近會合點確認位置，然後分開行動。", map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Shibuya+Station", deadline: "🔔 最晚 08:40 要從五反田離開", isReservation: false,
+            split: {
+              vivian: { label: "💇‍♀️ Vivian 前往編髮", desc: "Aries 澀谷西口店 編髮預約 (09:15)。步行約5-8分鐘，請準時到達。", map: "https://www.google.com/maps/dir/?api=1&origin=Shibuya+Station&destination=Aries+Shibuya" },
+              suzu: { label: "☕ Suzu 附近休息", desc: "在澀谷站周邊悠閒度過，等待 Vivian 編髮完成。", suggestions: [{ name: "📚 澀谷 Tsutaya 書店", map: "https://www.google.com/maps/dir/?api=1&origin=Shibuya+Station&destination=Shibuya+Tsutaya" }, { name: "🛍️ 澀谷 109", map: "https://www.google.com/maps/dir/?api=1&origin=Shibuya+Station&destination=Shibuya+109" }, { name: "🌳 代代木公園", map: "https://www.google.com/maps/dir/?api=1&origin=Shibuya+Station&destination=Yoyogi+Park" }], meetup: "🤝 預計 10:30 於 Aries 店前會合" }
+            }
           },
-          { 
-            title: "澀谷編髮預約 (09:15)", 
-            transport: "JR山手線4站至澀谷站 (約7分鐘)", 
-            tips: "出口：B1出口電梯（B1出口エレベーター），步行5-8分鐘。澀谷站因重建工程動線複雜，記得跟隨地下道指示。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Aries+Shibuya",
-            deadline: "🔔 最晚 08:40 要從五反田離開"
-          },
-          { 
-            title: "Aries 澀谷西口店", 
-            transport: "步行5-8分鐘", 
-            tips: "留意行人道平整，避開地磚縫隙。此區為澀谷商業核心，人流密度極高。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Aries+Shibuya&destination=Seibu+Shibuya",
-            deadline: "🔔 最晚 10:30 要從Aries離開"
-          },
-          { 
-            title: "Aoppella 5週年特展 @ 西武澀谷", 
-            transport: "副都心線1站至明治神宮前站", 
-            tips: "出口：5號出口電梯（5番出口エレベーター）。西武百貨館內手扶梯可直達會場。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Seibu+Shibuya&destination=Liqumu+Harajuku",
-            deadline: "🔔 最晚 12:30 要從西武澀谷離開"
-          },
-          { 
-            title: "Liqumu 原宿店", 
-            transport: "千代田線1站至表參道站", 
-            tips: "出口：B1出口手扶梯（B1出口エスカレーター）。若足部已累積疲勞，強烈建議搭乘千代田線進行短程換乘。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA",
-            deadline: "🔔 最晚 14:00 要從Liqumu離開",
-            instagram: "https://www.instagram.com/liqumu/"
-          },
-          { 
-            title: "Ginger Garden AOYAMA (16:00 預約)", 
-            transport: "步行約10分鐘", 
-            tips: "💡 預約編號：PZUN4DN6Z9｜電話：08076152945｜2名｜¥6,800/人（含飲放題）",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA",
-            deadline: "🔔 最晚 15:45 要到達 Ginger Garden",
-            instagram: "https://www.instagram.com/gingergardenaoyama/",
-            // 修改: screenshot 改為 gingergarden_jpg.jpg
-            screenshot: 'gingergarden_jpg.jpg',
-            reservationCaption: "Ginger Garden AOYAMA 預約截圖"
-          },
-          { 
-            title: "壽喜燒晚餐 with 時音（餐廳待定）", 
-            transport: "銀座線1站回澀谷站", 
-            tips: "澀谷BEAM大樓電梯直達6樓。餐廳內部桌椅寬敞，高度適合高跟鞋旅客用餐後的足部釋壓。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Ginger+Garden+AOYAMA&destination=Shibuya+Station",
-            deadline: "🔔 最晚 18:30 要抵達澀谷"
-          }
+          { id: 'i3', title: "Aries 澀谷西口店 (會合後)", transport: "步行5-8分鐘", tips: "留意行人道平整，避開地磚縫隙。此區為澀谷商業核心，人流密度極高。", map: "https://www.google.com/maps/dir/?api=1&origin=Aries+Shibuya&destination=Seibu+Shibuya", deadline: "🔔 最晚 10:30 要從Aries離開", isReservation: false },
+          { id: 'i4', title: "Aoppella 5週年特展 @ 西武澀谷", transport: "副都心線1站至明治神宮前站", tips: "出口：5號出口電梯（5番出口エレベーター）。西武百貨館內手扶梯可直達會場。", map: "https://www.google.com/maps/dir/?api=1&origin=Seibu+Shibuya&destination=Liqumu+Harajuku", deadline: "🔔 最晚 12:30 要從西武澀谷離開", isReservation: false },
+          { id: 'i5', title: "Liqumu 原宿店", transport: "千代田線1站至表參道站", tips: "出口：B1出口手扶梯（B1出口エスカレーター）。若足部已累積疲勞，強烈建議搭乘千代田線進行短程換乘。", map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA", deadline: "🔔 最晚 14:00 要從Liqumu離開", instagram: "https://www.instagram.com/liqumu/", isReservation: false },
+          { id: 'i6', title: "Ginger Garden AOYAMA (16:00 預約)", transport: "步行約10分鐘", tips: "💡 預約編號：PZUN4DN6Z9｜電話：08076152945｜2名｜¥6,800/人（含飲放題）", map: "https://www.google.com/maps/dir/?api=1&origin=Liqumu+Harajuku&destination=Ginger+Garden+AOYAMA", deadline: "🔔 最晚 15:45 要到達 Ginger Garden", instagram: "https://www.instagram.com/gingergardenaoyama/", screenshot: 'gingergarden_jpg.jpg', reservationCaption: "Ginger Garden AOYAMA 預約截圖", isReservation: true },
+          { id: 'i7', title: "壽喜燒晚餐 with 時音（餐廳待定）", transport: "銀座線1站回澀谷站", tips: "澀谷BEAM大樓電梯直達6樓。餐廳內部桌椅寬敞，高度適合高跟鞋旅客用餐後的足部釋壓。", map: "https://www.google.com/maps/dir/?api=1&origin=Ginger+Garden+AOYAMA&destination=Shibuya+Station", deadline: "🔔 最晚 18:30 要抵達澀谷", isReservation: false }
         ]
       },
-      2: {
-        date: "7月10日 (五)",
-        flow: "五反田 ➔ 橫濱新格蘭 ➔ 拉麵博物館 ➔ 池袋Sunshine",
-        wakeup: "⏰ 聽日請 08:00 起身，準備跨區移動！",
-        items: [
-          { 
-            title: "五反田 ➔ 橫濱新格蘭飯店", 
-            transport: "JR山手線→湘南新宿→港未來線", 
-            tips: "出口：元町中華街站1號出口手扶梯（1番出口エスカレーター）。出站後僅需平路步行1分鐘即可步入飯店大堂。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Hotel+New+Grand",
-            deadline: "🔔 最晚 09:30 要從五反田離開"
-          },
-          { 
-            title: "新橫濱拉麵博物館", 
-            transport: "港未來線→市營藍線", 
-            tips: "出口：新橫濱站8號出口電梯（8番出口エレベーター）。站內轉乘通道較長，請跟隨無障礙指標使用電梯。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+New+Grand&destination=Shinyokohama+Ramen+Museum",
-            deadline: "🔔 最晚 12:00 要從新格蘭離開"
-          },
-          { 
-            title: "池袋 namco + Sunshine City", 
-            transport: "東急新橫濱線直通 (約40分鐘)", 
-            tips: "池袋站Sunshine地下連通道（地下連絡通路）。東口人流量極大，建議走地下通道直達太陽城。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Shinyokohama+Ramen+Museum&destination=Ikebukuro+Station",
-            deadline: "🔔 最晚 15:00 要從拉麵博物館離開"
-          }
-        ]
-      },
-      3: {
-        date: "7月11日 (六)",
-        flow: "五反田 ➔ 新大久保 ➔ Laforet原宿 ➔ HAUTE COUTURE",
-        wakeup: "⏰ 聽日請 09:00 起身，悠閒手作日！",
-        items: [
-          { 
-            title: "新大久保 My fave Café (拼製娃娃)", 
-            transport: "JR山手線直達 (約14分鐘)", 
-            tips: "沿主幹道步行5-7分鐘，避開小巷。新大久保站前街道較狹窄，平日下午人潮水泄不通。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Shin-Okubo+Station",
-            deadline: "🔔 最晚 09:45 要從五反田離開"
-          },
-          { 
-            title: "Laforet 原宿 (失憶投捕快閃店)", 
-            transport: "JR山手線3站至原宿站", 
-            tips: "出口：表參道口出站（表参道口），避開竹下通。沿著寬闊平坦的表參道大道步行。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Shin-Okubo+Station&destination=Laforet+Harajuku",
-            deadline: "🔔 最晚 12:00 要從新大久保離開"
-          },
-          { 
-            title: "HAUTE COUTURE CAFE OMOTESANDO (16:00 預約)", 
-            transport: "步行8-10分鐘", 
-            tips: "💡 預約編號：PAELZEMGUA｜電話：08076152945｜2名｜¥6,450/人（期間限定白桃Afternoon Tea）",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Laforet+Harajuku&destination=HAUTE+COUTURE+CAFE+OMOTESANDO",
-            deadline: "🔔 最晚 15:45 要到達 HAUTE COUTURE",
-            instagram: "https://www.instagram.com/hautecouture_brunch/",
-            screenshot: 'haute.jpg',
-            reservationCaption: "HAUTE COUTURE BRUNCH 預約截圖"
-          }
-        ]
-      },
-      4: {
-        date: "7月12日 (日)",
-        flow: "五反田 ➔ 秋葉原 (寄存) ➔ 日暮里 ➔ 成田T2",
-        wakeup: "⏰ 聽日請 08:30 起身，準備返程！",
-        items: [
-          { 
-            title: "五反田 ➔ 秋葉原 (行李寄存)", 
-            transport: "JR山手線外環 (約18分鐘)", 
-            tips: "💡 零拖行秘訣：秋葉原站內中央改札口區域設有全東京最大規模智慧型電子置物櫃（支援Suica）。將大行李箱存入後，空手輕鬆穿高跟鞋逛街！",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Akihabara+Station",
-            deadline: "🔔 最晚 10:30 要從五反田離開"
-          },
-          { 
-            title: "秋葉原補貨 (Radio會館 / namco)", 
-            transport: "步行1-2分鐘", 
-            tips: "空手穿高跟鞋能極大提升在電氣街搜刮周邊的戰鬥力。中午12:45前完成所有補貨。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Akihabara+Radio+Kaikan",
-            deadline: "🔔 最晚 12:45 要取回行李"
-          },
-          { 
-            title: "秋葉原 ➔ 日暮里 ➔ 成田T2", 
-            transport: "山手線→日暮里Skyliner (約36分鐘)", 
-            tips: "日暮里站無縫電梯轉乘（日暮里駅エレベーター乗り換え）。站內動線完全平整，設有專用大型電梯直達Skyliner月台。",
-            map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Keisei-Ueno+Station",
-            deadline: "🔔 最晚 13:00 要從秋葉原離開"
-          }
-        ]
-      }
+      2: { date: "7月10日 (五)", flow: "五反田 ➔ 橫濱新格蘭 ➔ 拉麵博物館 ➔ 池袋Sunshine", wakeup: "⏰ 聽日請 08:00 起身，準備跨區移動！", items: [
+        { id: 'i8', title: "五反田 ➔ 橫濱新格蘭飯店", transport: "JR山手線→湘南新宿→港未來線", tips: "出口：元町中華街站1號出口手扶梯（1番出口エスカレーター）。出站後僅需平路步行1分鐘即可步入飯店大堂。", map: "https://www.google.com/maps/dir/?api=1&origin=Gotanda+Station&destination=Hotel+New+Grand", deadline: "🔔 最晚 09:30 要從五反田離開", isReservation: false },
+        { id: 'i9', title: "新橫濱拉麵博物館", transport: "港未來線→市營藍線", tips: "出口：新橫濱站8號出口電梯（8番出口エレベーター）。站內轉乘通道較長，請跟隨無障礙指標使用電梯。", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+New+Grand&destination=Shinyokohama+Ramen+Museum", deadline: "🔔 最晚 12:00 要從新格蘭離開", isReservation: false },
+        { id: 'i10', title: "池袋 namco + Sunshine City", transport: "東急新橫濱線直通 (約40分鐘)", tips: "池袋站Sunshine地下連通道（地下連絡通路）。東口人流量極大，建議走地下通道直達太陽城。", map: "https://www.google.com/maps/dir/?api=1&origin=Shinyokohama+Ramen+Museum&destination=Ikebukuro+Station", deadline: "🔔 最晚 15:00 要從拉麵博物館離開", isReservation: false }
+      ] },
+      3: { date: "7月11日 (六)", flow: "五反田 ➔ 新大久保 ➔ Laforet原宿 ➔ HAUTE COUTURE", wakeup: "⏰ 聽日請 09:00 起身，悠閒手作日！", items: [
+        { id: 'i11', title: "新大久保 My fave Café (拼製娃娃)", transport: "JR山手線直達 (約14分鐘)", tips: "沿主幹道步行5-7分鐘，避開小巷。新大久保站前街道較狹窄，平日下午人潮水泄不通。", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Shin-Okubo+Station", deadline: "🔔 最晚 09:45 要從五反田離開", isReservation: false },
+        { id: 'i12', title: "Laforet 原宿 (失憶投捕快閃店)", transport: "JR山手線3站至原宿站", tips: "出口：表參道口出站（表参道口），避開竹下通。沿著寬闊平坦的表參道大道步行。", map: "https://www.google.com/maps/dir/?api=1&origin=Shin-Okubo+Station&destination=Laforet+Harajuku", deadline: "🔔 最晚 12:00 要從新大久保離開", isReservation: false },
+        { id: 'i13', title: "HAUTE COUTURE CAFE OMOTESANDO (16:00 預約)", transport: "步行8-10分鐘", tips: "💡 預約編號：PAELZEMGUA｜電話：08076152945｜2名｜¥6,450/人（期間限定白桃Afternoon Tea）", map: "https://www.google.com/maps/dir/?api=1&origin=Laforet+Harajuku&destination=HAUTE+COUTURE+CAFE+OMOTESANDO", deadline: "🔔 最晚 15:45 要到達 HAUTE COUTURE", instagram: "https://www.instagram.com/hautecouture_brunch/", screenshot: 'haute.jpg', reservationCaption: "HAUTE COUTURE BRUNCH 預約截圖", isReservation: true }
+      ] },
+      4: { date: "7月12日 (日)", flow: "五反田 ➔ 秋葉原 (寄存) ➔ 日暮里 ➔ 成田T2", wakeup: "⏰ 聽日請 08:30 起身，準備返程！", items: [
+        { id: 'i14', title: "五反田 ➔ 秋葉原 (行李寄存)", transport: "JR山手線外環 (約18分鐘)", tips: "💡 零拖行秘訣：秋葉原站內中央改札口區域設有全東京最大規模智慧型電子置物櫃（支援Suica）。將大行李箱存入後，空手輕鬆穿高跟鞋逛街！", map: "https://www.google.com/maps/dir/?api=1&origin=Hotel+MyStays+Gotanda+Ekimae&destination=Akihabara+Station", deadline: "🔔 最晚 10:30 要從五反田離開", isReservation: false },
+        { id: 'i15', title: "秋葉原補貨 (Radio會館 / namco)", transport: "步行1-2分鐘", tips: "空手穿高跟鞋能極大提升在電氣街搜刮周邊的戰鬥力。中午12:45前完成所有補貨。", map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Akihabara+Radio+Kaikan", deadline: "🔔 最晚 12:45 要取回行李", isReservation: false },
+        { id: 'i16', title: "秋葉原 ➔ 日暮里 ➔ 成田T2", transport: "山手線→日暮里Skyliner (約36分鐘)", tips: "日暮里站無縫電梯轉乘（日暮里駅エレベーター乗り換え）。站內動線完全平整，設有專用大型電梯直達Skyliner月台。", map: "https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station&destination=Keisei-Ueno+Station", deadline: "🔔 最晚 13:00 要從秋葉原離開", isReservation: false }
+      ] }
     };
 
-    // 記帳資料
-    let billsList = [];
     let currentDay = 1;
     let detailVisible = false;
     let activeScreenshot = '';
+    let editingItemId = null;
+    let editingDay = null;
+    let billsList = [];
+    let settlementHistory = [];
+    let receiptItems = [];
+    let receiptTotal = 0;
 
-    // ==================== 預約詳情 Modal ====================
+    // ===== 登機牌上傳 =====
+    let boardingPassData = null;
+
+    function uploadBoardingPass(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        boardingPassData = e.target.result;
+        const previewContainer = document.getElementById('bp-preview-container');
+        const previewImg = document.getElementById('bp-preview-img');
+        const filenameEl = document.getElementById('bp-filename');
+        previewImg.src = boardingPassData;
+        previewContainer.style.display = 'block';
+        filenameEl.textContent = `📎 ${file.name}`;
+        // 儲存到 localStorage
+        try {
+          localStorage.setItem('boardingPass', boardingPassData);
+        } catch (e) { /* ignore */ }
+        showToast('✅ 登機牌已上傳');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeBoardingPass() {
+      boardingPassData = null;
+      document.getElementById('bp-preview-container').style.display = 'none';
+      document.getElementById('bp-preview-img').src = '';
+      document.getElementById('bp-filename').textContent = '';
+      try {
+        localStorage.removeItem('boardingPass');
+      } catch (e) { /* ignore */ }
+      showToast('🗑️ 登機牌已移除');
+    }
+
+    function loadBoardingPassFromStorage() {
+      try {
+        const stored = localStorage.getItem('boardingPass');
+        if (stored) {
+          boardingPassData = stored;
+          const previewContainer = document.getElementById('bp-preview-container');
+          const previewImg = document.getElementById('bp-preview-img');
+          previewImg.src = stored;
+          previewContainer.style.display = 'block';
+          document.getElementById('bp-filename').textContent = '📎 已儲存的登機牌';
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    // ==================== 航班摺疊 ====================
+    let flightDetailOpen = false;
+
+    function toggleFlightDetail() {
+      flightDetailOpen = !flightDetailOpen;
+      const detail = document.getElementById('flight-detail');
+      const arrow = document.getElementById('flight-arrow');
+      if (flightDetailOpen) { detail.classList.add('open'); arrow.classList.add('open'); }
+      else { detail.classList.remove('open'); arrow.classList.remove('open'); }
+      lucide.createIcons();
+    }
+
+    // ==================== 天氣 ====================
+    const weatherData = {
+      1: { temp: 28, desc: '☀️ 晴天', humidity: 65, wind: '3級', rain: 0, umbrella: false },
+      2: { temp: 26, desc: '⛅ 多雲', humidity: 70, wind: '2級', rain: 10, umbrella: false },
+      3: { temp: 24, desc: '🌧️ 陣雨', humidity: 82, wind: '4級', rain: 70, umbrella: true },
+      4: { temp: 27, desc: '☀️ 晴時多雲', humidity: 60, wind: '2級', rain: 5, umbrella: false }
+    };
+
+    function updateWeather(day) {
+      const w = weatherData[day];
+      if (!w) return;
+      document.getElementById('weather-desc').textContent = w.desc;
+      document.getElementById('weather-temp').textContent = `${w.temp}°C`;
+      document.getElementById('weather-location').textContent = `📍 東京 · 濕度 ${w.humidity}% · 風 ${w.wind}`;
+      const tip = document.getElementById('umbrella-tip');
+      if (w.umbrella) { tip.textContent = '☂️ 記得帶傘！'; tip.className = 'umbrella-tip warning'; }
+      else if (w.rain > 30) { tip.textContent = '🌂 建議帶傘備用'; tip.className = 'umbrella-tip warning'; }
+      else { tip.textContent = '☀️ 無需帶傘'; tip.className = 'umbrella-tip'; }
+    }
+
+    // ==================== 行程渲染 ====================
+    function renderItinerary() {
+      const data = editableItineraryData[currentDay];
+      if (!data) return;
+      
+      document.getElementById('route-flow').innerText = data.flow;
+      document.getElementById('wakeup-tip').innerHTML = data.wakeup;
+
+      checkConflicts(data);
+
+      const container = document.getElementById('itinerary-cards');
+      container.innerHTML = '';
+      
+      data.items.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = "cute-card p-5 space-y-3";
+        card.dataset.itemId = item.id;
+        
+        let extraHtml = '';
+        if (item.instagram) {
+          extraHtml += `<a href="${item.instagram}" target="_blank" class="reservation-btn"><i data-lucide="instagram" class="w-3 h-3"></i> Instagram</a>`;
+        }
+        if (item.screenshot) {
+          extraHtml += `<a href="#" class="reservation-btn" data-screenshot="${item.screenshot}" data-caption="${item.reservationCaption || '預約截圖'}" onclick="event.preventDefault(); showReservation(this.dataset.screenshot, this.dataset.caption);"><i data-lucide="file-text" class="w-3 h-3"></i> 預約詳情</a>`;
+        }
+
+        const editBtns = `<div class="flex gap-1 mt-1"><span class="edit-btn" onclick="openEditModal('${item.id}', ${currentDay})">✏️ 編輯</span></div>`;
+
+        let deadlineHtml = '';
+        if (item.deadline) {
+          deadlineHtml = `<div class="deadline-plain">${item.deadline}</div>`;
+        }
+        
+        let splitHtml = '';
+        if (item.split) {
+          const v = item.split.vivian;
+          const s = item.split.suzu;
+          let suggHtml = '';
+          if (s.suggestions && s.suggestions.length > 0) {
+            const suggId = `sugg-${idx}`;
+            let itemsHtml = s.suggestions.map(sg => `
+              <div class="s-item">
+                <span class="name">${sg.name}</span>
+                <a href="${sg.map}" target="_blank">導航 ➜</a>
+              </div>
+            `).join('');
+            suggHtml = `
+              <div class="suggest-toggle" onclick="document.getElementById('${suggId}').classList.toggle('show')">📍 去邊度好？</div>
+              <div class="suggest-list" id="${suggId}">
+                ${itemsHtml}
+              </div>
+            `;
+          }
+          let meetupHtml = s.meetup ? `<div class="meetup-note">${s.meetup}</div>` : '';
+          splitHtml = `
+            <div class="split-row">
+              <div class="split-col">
+                <div class="label">${v.label}</div>
+                <div class="desc">${v.desc}</div>
+                <div style="margin-top:4px;"><a href="${v.map}" target="_blank" class="text-[10px] text-[#e48070] bg-white px-3 py-0.5 rounded-full border border-[#ffd9de] inline-block">🧭 導航</a></div>
+              </div>
+              <div class="split-col">
+                <div class="label">${s.label}</div>
+                <div class="desc">${s.desc}</div>
+                ${suggHtml}
+                ${meetupHtml}
+              </div>
+            </div>
+          `;
+        }
+        
+        card.innerHTML = `
+          ${deadlineHtml}
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-start gap-2">
+              <span class="bg-[#f5b0a0] text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">${idx+1}</span>
+              <h4 class="font-bold text-gray-800 text-sm">${item.title} ${item.isReservation ? '⭐' : ''}</h4>
+            </div>
+            ${editBtns}
+          </div>
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs text-gray-600">🚆 ${item.transport}</div>
+          <div class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] text-xs text-gray-700">💡 ${item.tips}</div>
+          ${splitHtml}
+          ${extraHtml ? `<div class="flex flex-wrap gap-2 mt-1">${extraHtml}</div>` : ''}
+          <div class="flex justify-end"><a href="${item.map}" target="_blank" class="bg-white border-2 border-[#ffd9de] text-[#e48070] hover:bg-[#fdf0f2] px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>導航</a></div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+
+      if (!detailVisible) {
+        document.getElementById('itinerary-detail').classList.add('hidden');
+        document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
+      } else {
+        document.getElementById('itinerary-detail').classList.remove('hidden');
+        document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-up" class="w-4 h-4"></i>';
+      }
+      lucide.createIcons();
+    }
+
+    // ==================== 時間衝突檢測 ====================
+    function checkConflicts(data) {
+      const warningEl = document.getElementById('conflict-warning');
+      const warnings = [];
+      
+      for (let i = 0; i < data.items.length; i++) {
+        if (data.items[i].id === 'i6') continue;
+        if (data.items[i].isReservation) {
+          const beforeCount = data.items.slice(0, i).filter(it => !it.isReservation).length;
+          if (beforeCount > 4) {
+            warnings.push(`⚠️ 在「${data.items[i].title}」預約前有 ${beforeCount} 個行程，可能時間不足，建議調整`);
+          }
+        }
+      }
+      
+      if (warnings.length > 0) {
+        warningEl.classList.remove('hidden');
+        warningEl.innerHTML = warnings.join('<br>');
+      } else {
+        warningEl.classList.add('hidden');
+      }
+    }
+
+    // ==================== 編輯功能 ====================
+    let editingItem = null;
+
+    function openEditModal(itemId, day) {
+      editingItemId = itemId;
+      editingDay = day;
+      const data = editableItineraryData[day];
+      const item = data.items.find(i => i.id === itemId);
+      if (!item) return;
+      editingItem = item;
+      
+      document.getElementById('edit-modal-title').textContent = `✏️ 編輯行程`;
+      document.getElementById('edit-title').value = item.title || '';
+      document.getElementById('edit-transport').value = item.transport || '';
+      document.getElementById('edit-tips').value = item.tips || '';
+      document.getElementById('edit-map').value = item.map || '';
+      document.getElementById('edit-deadline').value = item.deadline || '';
+      document.getElementById('edit-conflict-warning').classList.add('hidden');
+      
+      document.getElementById('edit-delete-btn').style.display = 'block';
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function openAddItemModal() {
+      editingItemId = null;
+      editingDay = currentDay;
+      document.getElementById('edit-modal-title').textContent = '➕ 新增行程';
+      document.getElementById('edit-title').value = '';
+      document.getElementById('edit-transport').value = '';
+      document.getElementById('edit-tips').value = '';
+      document.getElementById('edit-map').value = '';
+      document.getElementById('edit-deadline').value = '';
+      document.getElementById('edit-conflict-warning').classList.add('hidden');
+      document.getElementById('edit-delete-btn').style.display = 'none';
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.add('hidden');
+      editingItemId = null;
+      editingItem = null;
+    }
+
+    function saveEditItem() {
+      const title = document.getElementById('edit-title').value.trim();
+      const transport = document.getElementById('edit-transport').value.trim();
+      const tips = document.getElementById('edit-tips').value.trim();
+      const map = document.getElementById('edit-map').value.trim();
+      const deadline = document.getElementById('edit-deadline').value.trim();
+      
+      if (!title) { showToast('請輸入行程標題'); return; }
+      
+      const data = editableItineraryData[editingDay];
+      
+      if (editingItemId) {
+        const item = data.items.find(i => i.id === editingItemId);
+        if (item) {
+          item.title = title;
+          item.transport = transport || '步行';
+          item.tips = tips || '💡 請參考導航';
+          item.map = map || '#';
+          item.deadline = deadline || '';
+        }
+      } else {
+        const newItem = {
+          id: 'i' + Date.now().toString(),
+          title: title,
+          transport: transport || '步行',
+          tips: tips || '💡 請參考導航',
+          map: map || '#',
+          deadline: deadline || '',
+          isReservation: false
+        };
+        data.items.push(newItem);
+      }
+      
+      updateFlowText(editingDay);
+      closeEditModal();
+      renderItinerary();
+      checkConflicts(data);
+      showToast('✅ 行程已更新');
+    }
+
+    function deleteCurrentItem() {
+      if (!editingItemId) return;
+      if (!confirm('確定要刪除此行程嗎？')) return;
+      
+      const data = editableItineraryData[editingDay];
+      data.items = data.items.filter(i => i.id !== editingItemId);
+      updateFlowText(editingDay);
+      closeEditModal();
+      renderItinerary();
+      checkConflicts(data);
+      showToast('🗑️ 行程已刪除');
+    }
+
+    function updateFlowText(day) {
+      const data = editableItineraryData[day];
+      if (!data) return;
+      const titles = data.items.map(i => i.title).join(' ➔ ');
+      data.flow = titles;
+    }
+
+    // ==================== 顯示預約詳情 ====================
     function showReservation(screenshotFilename, caption) {
       const modal = document.getElementById('reservation-modal');
       const img = document.getElementById('modal-image');
@@ -405,15 +1030,20 @@
       document.body.style.overflow = 'auto';
     }
 
-    // ==================== UI 切換 ====================
+    // ==================== 分頁切換 ====================
     function switchTab(tab) {
       ['itinerary','billing','rate'].forEach(id => document.getElementById('sec-'+id).classList.add('hidden'));
       ['tab-itinerary','tab-billing','tab-rate'].forEach(id => {
         document.getElementById(id).className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 text-gray-500 hover:bg-[#fdf0f2] flex flex-col items-center justify-center gap-0.5";
       });
-      if (tab==='itinerary') { document.getElementById('sec-itinerary').classList.remove('hidden'); document.getElementById('tab-itinerary').className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"; }
+      if (tab==='itinerary') { 
+        document.getElementById('sec-itinerary').classList.remove('hidden'); 
+        document.getElementById('tab-itinerary').className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"; 
+        updateWeather(currentDay);
+        updateFlights(currentDay);
+      }
       else if (tab==='billing') { document.getElementById('sec-billing').classList.remove('hidden'); document.getElementById('tab-billing').className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"; recalculateBills(); }
-      else { document.getElementById('sec-rate').classList.remove('hidden'); document.getElementById('tab-rate').className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"; }
+      else { document.getElementById('sec-rate').classList.remove('hidden'); document.getElementById('tab-rate').className = "py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"; fetchRealTimeRate(); }
       lucide.createIcons();
     }
 
@@ -435,6 +1065,8 @@
           if (p2) p2.className = "text-xs font-bold text-gray-600 mt-0.5";
         }
       }
+      updateWeather(day);
+      updateFlights(day);
       renderItinerary();
     }
 
@@ -452,68 +1084,163 @@
       lucide.createIcons();
     }
 
-    function renderItinerary() {
-      const data = itineraryData[currentDay];
-      if (!data) return;
-      
-      document.getElementById('route-flow').innerText = data.flow;
-      document.getElementById('wakeup-tip').innerHTML = data.wakeup;
-
-      const container = document.getElementById('itinerary-cards');
-      container.innerHTML = '';
-      
-      data.items.forEach((item, idx) => {
-        const card = document.createElement('div');
-        card.className = "cute-card p-5 space-y-3";
-        
-        // 構建額外按鈕
-        let extraHtml = '';
-        if (item.instagram) {
-          extraHtml += `<a href="${item.instagram}" target="_blank" class="reservation-btn"><i data-lucide="instagram" class="w-3 h-3"></i> Instagram</a>`;
-        }
-        if (item.screenshot) {
-          extraHtml += `<a href="#" class="reservation-btn" data-screenshot="${item.screenshot}" data-caption="${item.reservationCaption || '預約截圖'}" onclick="event.preventDefault(); showReservation(this.dataset.screenshot, this.dataset.caption);"><i data-lucide="file-text" class="w-3 h-3"></i> 預約詳情</a>`;
-        }
-
-        // deadline 移動到卡片最上方，純文字樣式
-        let deadlineHtml = '';
-        if (item.deadline) {
-          deadlineHtml = `<div class="deadline-plain">${item.deadline}</div>`;
-        }
-        
-        card.innerHTML = `
-          ${deadlineHtml}
-          <div class="flex items-start gap-2">
-            <span class="bg-[#f5b0a0] text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">${idx+1}</span>
-            <h4 class="font-bold text-gray-800 text-sm">${item.title}</h4>
-          </div>
-          <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs text-gray-600">🚆 ${item.transport}</div>
-          <div class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] text-xs text-gray-700">💡 ${item.tips}</div>
-          ${extraHtml ? `<div class="flex flex-wrap gap-2 mt-1">${extraHtml}</div>` : ''}
-          <div class="flex justify-end"><a href="${item.map}" target="_blank" class="bg-white border-2 border-[#ffd9de] text-[#e48070] hover:bg-[#fdf0f2] px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>導航</a></div>
-        `;
-        container.appendChild(card);
-      });
-      lucide.createIcons();
-
-      if (!detailVisible) {
-        document.getElementById('itinerary-detail').classList.add('hidden');
-        document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
+    // ==================== 航班顯示 ====================
+    function updateFlights(day) {
+      const departEl = document.getElementById('flight-depart');
+      const returnEl = document.getElementById('flight-return');
+      const tipEl = document.getElementById('departure-tip');
+      const section = document.getElementById('flight-section');
+      if (day === 1) {
+        departEl.style.display = 'flex';
+        returnEl.style.display = 'none';
+        tipEl.style.display = 'block';
+        section.style.display = 'block';
+      } else if (day === 4) {
+        departEl.style.display = 'none';
+        returnEl.style.display = 'flex';
+        tipEl.style.display = 'none';
+        section.style.display = 'block';
       } else {
-        document.getElementById('itinerary-detail').classList.remove('hidden');
-        document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-up" class="w-4 h-4"></i>';
+        section.style.display = 'none';
       }
-      lucide.createIcons();
     }
 
-    // ==================== 記帳邏輯 (不變) ====================
+    // ==================== 記帳功能 + 單據掃描 ====================
     function toggleSplitUI() {
       const val = document.getElementById('bill-split-type').value;
       document.getElementById('split-equal-ui').classList.toggle('hidden', val!=='equal');
       document.getElementById('split-custom-ui').classList.toggle('hidden', val!=='custom');
+      document.getElementById('split-receipt-ui').classList.toggle('hidden', val!=='receipt');
+      if (val === 'receipt') {
+        document.getElementById('bill-amount').value = receiptTotal || '';
+      }
     }
+
     function updateBillCurrencyUI() {
       document.getElementById('amount-unit').innerText = document.getElementById('bill-currency').value;
+    }
+
+    async function processReceiptImage(file) {
+      if (!file) return;
+      const loadingEl = document.getElementById('ocr-loading');
+      const listEl = document.getElementById('receipt-items-list');
+      loadingEl.classList.add('show');
+      listEl.innerHTML = '';
+      receiptItems = [];
+      receiptTotal = 0;
+
+      try {
+        const imageUrl = URL.createObjectURL(file);
+        const result = await Tesseract.recognize(imageUrl, 'chi_tra+eng+jpn', {
+          logger: (m) => console.log(m)
+        });
+        const text = result.data.text;
+        console.log('OCR Result:', text);
+        
+        const lines = text.split('\n').filter(line => line.trim().length > 0);
+        const items = [];
+        const pricePattern = /(\d+[,.]?\d*)\s*(円|¥|JPY|HKD|\$)/i;
+        
+        for (const line of lines) {
+          const trimmed = line.trim();
+          const priceMatch = trimmed.match(pricePattern);
+          if (priceMatch) {
+            const priceStr = priceMatch[1].replace(/,/g, '');
+            const price = parseFloat(priceStr);
+            if (!isNaN(price) && price > 0) {
+              const beforePrice = trimmed.substring(0, trimmed.indexOf(priceMatch[0])).trim();
+              const name = beforePrice || '商品';
+              let translatedName = name;
+              const translateMap = {
+                'Tシャツ': 'T恤', 'シャツ': '襯衫', 'パンツ': '褲子', 'スカート': '裙子',
+                'ドレス': '連衣裙', 'ジャケット': '外套', 'コート': '大衣', '靴': '鞋子',
+                'バッグ': '包包', 'アクセサリー': '飾品', 'ネックレス': '項鍊',
+                'リング': '戒指', 'イヤリング': '耳環', '時計': '手錶',
+                '化粧品': '化妝品', 'リップ': '唇膏', 'ファンデーション': '粉底',
+                'アイシャドウ': '眼影', 'マスカラ': '睫毛膏', 'ネイル': '指甲油',
+                'お菓子': '零食', 'チョコレート': '巧克力', 'クッキー': '餅乾',
+                '飲み物': '飲料', 'コーヒー': '咖啡', '紅茶': '紅茶',
+                'ケーキ': '蛋糕', 'パン': '麵包', 'ラーメン': '拉麵',
+                '寿司': '壽司', '刺身': '生魚片', '天ぷら': '天婦羅'
+              };
+              for (const [jp, zh] of Object.entries(translateMap)) {
+                if (name.includes(jp)) { translatedName = name.replace(jp, zh); break; }
+              }
+              items.push({ name: translatedName, price: price, member: 'Vivian', checked: true });
+              receiptTotal += price;
+            }
+          }
+        }
+        
+        if (items.length === 0) {
+          items.push({ name: '單據總額', price: 0, member: 'Vivian', checked: true });
+          const totalMatch = text.match(/合計|total|計\s*(\d+[,.]?\d*)/i);
+          if (totalMatch) {
+            const totalStr = totalMatch[1].replace(/,/g, '');
+            const total = parseFloat(totalStr);
+            if (!isNaN(total) && total > 0) {
+              items[0].price = total;
+              receiptTotal = total;
+            }
+          }
+        } else {
+          receiptTotal = items.reduce((sum, item) => sum + item.price, 0);
+        }
+        
+        receiptItems = items;
+        renderReceiptItems();
+        document.getElementById('bill-amount').value = receiptTotal;
+        showToast(`✅ 已辨識 ${items.length} 項商品，總額 ¥${receiptTotal}`);
+      } catch (e) {
+        console.error('OCR Error:', e);
+        showToast('⚠️ 單據辨識失敗，請手動輸入');
+      } finally {
+        loadingEl.classList.remove('show');
+      }
+    }
+
+    function renderReceiptItems() {
+      const listEl = document.getElementById('receipt-items-list');
+      listEl.innerHTML = '';
+      receiptItems.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'receipt-item';
+        div.innerHTML = `
+          <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="receiptItems[${index}].checked = this.checked; updateReceiptTotal()">
+          <span class="item-name">${item.name}</span>
+          <span class="item-price">¥${item.price}</span>
+          <select class="member-select" onchange="receiptItems[${index}].member = this.value">
+            <option value="Vivian" ${item.member === 'Vivian' ? 'selected' : ''}>Vivian</option>
+            <option value="Suzu" ${item.member === 'Suzu' ? 'selected' : ''}>Suzu</option>
+          </select>
+        `;
+        listEl.appendChild(div);
+      });
+    }
+
+    function updateReceiptTotal() {
+      const total = receiptItems.filter(item => item.checked).reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('bill-amount').value = total;
+    }
+
+    function applyReceiptItems() {
+      const checked = receiptItems.filter(item => item.checked);
+      if (checked.length === 0) { showToast('請至少勾選一項商品'); return; }
+      
+      const memberTotals = { Vivian: 0, Suzu: 0 };
+      checked.forEach(item => {
+        memberTotals[item.member] += item.price;
+      });
+      
+      document.getElementById('bill-split-type').value = 'custom';
+      toggleSplitUI();
+      document.getElementById('split-val-vivian').value = memberTotals.Vivian || 0;
+      document.getElementById('split-val-suzu').value = memberTotals.Suzu || 0;
+      
+      const total = checked.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('bill-amount').value = total;
+      
+      showToast(`✅ 已套用 ${checked.length} 項商品，Vivian: ¥${memberTotals.Vivian}，Suzu: ¥${memberTotals.Suzu}`);
     }
 
     function addBillItem() {
@@ -536,19 +1263,31 @@
         const per = amount/count;
         if (sv) customShares.Vivian = per;
         if (ss) customShares.Suzu = per;
-      } else {
+      } else if (splitType === 'custom') {
         const vv = parseFloat(document.getElementById('split-val-vivian').value) || 0;
         const ss = parseFloat(document.getElementById('split-val-suzu').value) || 0;
-        if (vv+ss===0) { showToast("請填寫分開付款金額"); return; }
+        if (vv+ss === 0) { showToast("請填寫分開付款金額"); return; }
         customShares = {Vivian:vv, Suzu:ss};
         shares = {Vivian: vv>0, Suzu: ss>0};
+      } else if (splitType === 'receipt') {
+        const checked = receiptItems.filter(item => item.checked);
+        if (checked.length === 0) { showToast("請先掃描單據並勾選商品"); return; }
+        checked.forEach(item => {
+          customShares[item.member] = (customShares[item.member] || 0) + item.price;
+        });
+        shares = {Vivian: customShares.Vivian > 0, Suzu: customShares.Suzu > 0};
+        document.getElementById('bill-amount').value = checked.reduce((sum, item) => sum + item.price, 0);
       }
 
       const now = new Date();
       const dateStr = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      
+      const hasUncleared = billsList.some(b => !b.cleared);
+      if (hasUncleared) captureSettlementSnapshot();
+      
       billsList.push({
         id: Date.now().toString(),
-        name, payer, amount, currency, splitType, shares, customShares,
+        name, payer, amount: parseFloat(document.getElementById('bill-amount').value) || amount, currency, splitType, shares, customShares,
         cleared: false, date: dateStr
       });
       showToast("✅ 已加入帳目");
@@ -556,20 +1295,55 @@
       document.getElementById('bill-amount').value = '';
       document.getElementById('split-val-vivian').value = '';
       document.getElementById('split-val-suzu').value = '';
+      receiptItems = [];
+      document.getElementById('receipt-items-list').innerHTML = '';
       recalculateBills();
+    }
+
+    function captureSettlementSnapshot() {
+      const rate = parseFloat(document.getElementById('settle-rate').value) || currentRate;
+      const now = new Date();
+      const timeStr = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      
+      let vPaidJPY=0, sPaidJPY=0, vOwnJPY=0, sOwnJPY=0;
+      const uncleared = billsList.filter(b => !b.cleared);
+      uncleared.forEach(item => {
+        const factor = item.currency === 'JPY' ? 1 : (1/rate);
+        const amtJPY = item.amount * factor;
+        if (item.payer === 'Vivian') vPaidJPY += amtJPY;
+        else sPaidJPY += amtJPY;
+        vOwnJPY += item.customShares.Vivian * factor;
+        sOwnJPY += item.customShares.Suzu * factor;
+      });
+      
+      const vBalance = vPaidJPY - vOwnJPY;
+      const sBalance = sPaidJPY - sOwnJPY;
+      
+      let resultText = '';
+      if (uncleared.length === 0) resultText = '✨ 全部已結清 ✨';
+      else if (Math.abs(vBalance) < 0.1) resultText = '👌 完美平衡！';
+      else if (vBalance < 0) resultText = `👉 Vivian 應付 Suzu: ¥${Math.abs(vBalance).toFixed(0)} ($${(Math.abs(vBalance)*rate).toFixed(1)})`;
+      else resultText = `👉 Suzu 應付 Vivian: ¥${Math.abs(sBalance).toFixed(0)} ($${(Math.abs(sBalance)*rate).toFixed(1)})`;
+      
+      settlementHistory.push({
+        time: timeStr, rate: rate,
+        items: uncleared.map(item => ({ name: item.name, payer: item.payer, amount: item.amount, currency: item.currency, split: item.splitType === 'equal' ? '均分' : `V:${item.customShares.Vivian.toFixed(0)}/S:${item.customShares.Suzu.toFixed(0)}` })),
+        vPaid: vPaidJPY, sPaid: sPaidJPY, vOwn: vOwnJPY, sOwn: sOwnJPY, result: resultText
+      });
     }
 
     function toggleClearItem(id) {
       const item = billsList.find(i => i.id === id);
-      if (item) { item.cleared = !item.cleared; recalculateBills(); }
+      if (item) { item.cleared = !item.cleared; captureSettlementSnapshot(); recalculateBills(); }
     }
     function deleteBillItem(id) {
+      captureSettlementSnapshot();
       billsList = billsList.filter(i => i.id !== id);
       recalculateBills();
     }
 
     function recalculateBills() {
-      const rate = parseFloat(document.getElementById('settle-rate').value) || JPY_TO_HKD_RATE;
+      const rate = parseFloat(document.getElementById('settle-rate').value) || currentRate;
       const container = document.getElementById('bill-items-list');
       container.innerHTML = '';
       if (billsList.length === 0) {
@@ -579,7 +1353,9 @@
           const cleared = item.cleared;
           const div = document.createElement('div');
           div.className = `p-3 rounded-xl border border-[#ffd9de] bg-white space-y-1.5 ${cleared ? 'opacity-60 bg-gray-50' : ''}`;
-          let detail = item.splitType === 'equal' ? `均分 (${Object.keys(item.shares).filter(k=>item.shares[k]).join(', ')})` : `自訂 (V:${item.customShares.Vivian.toFixed(0)} / S:${item.customShares.Suzu.toFixed(0)})`;
+          let detail = item.splitType === 'equal' ? `均分 (${Object.keys(item.shares).filter(k=>item.shares[k]).join(', ')})` : 
+                       item.splitType === 'receipt' ? `單據分帳 (V:${item.customShares.Vivian.toFixed(0)}/S:${item.customShares.Suzu.toFixed(0)})` :
+                       `自訂 (V:${item.customShares.Vivian.toFixed(0)} / S:${item.customShares.Suzu.toFixed(0)})`;
           div.innerHTML = `
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2"><input type="checkbox" ${cleared?'checked':''} onchange="toggleClearItem('${item.id}')" class="accent-[#f5b0a0]"><span class="text-xs font-bold ${cleared?'line-through text-gray-400':''}">${item.name}</span></div>
@@ -626,42 +1402,78 @@
       }
     }
 
-    function clearAllBills() { if (confirm('清空所有記帳？')) { billsList = []; recalculateBills(); showToast('已清空 🧹'); } }
+    function clearAllBills() { 
+      if (confirm('清空所有記帳？')) { captureSettlementSnapshot(); billsList = []; recalculateBills(); showToast('已清空 🧹'); } 
+    }
 
-    function exportToClipboard() {
-      const rate = parseFloat(document.getElementById('settle-rate').value) || JPY_TO_HKD_RATE;
-      let text = `✨ 東京推活之旅 · 結帳對帳單 ✨\n日期: ${new Date().toLocaleString()}\n匯率: 1 JPY = ${rate} HKD\n-------------------------------------------\n`;
-      billsList.forEach((item,i) => {
-        text += `${i+1}. ${item.name} ${item.cleared?'[已結清]':'[未結清]'}\n   付款人: ${item.payer} (${item.currency} ${item.amount})\n   分攤: ${item.splitType==='equal'?'人均均分':`V:${item.customShares.Vivian} / S:${item.customShares.Suzu}`}\n   時間: ${item.date}\n\n`;
-      });
+    function exportAsImage() {
+      const rate = parseFloat(document.getElementById('settle-rate').value) || currentRate;
+      const now = new Date();
+      const dateStr = now.toLocaleString('zh-HK', { hour12: false });
+      
+      const container = document.getElementById('export-container');
+      document.getElementById('export-date').textContent = `日期: ${dateStr}  |  匯率: 1 JPY = ${rate} HKD`;
+      
+      const uncleared = billsList.filter(b => !b.cleared);
+      const itemsHtml = document.getElementById('export-items-list');
+      itemsHtml.innerHTML = '';
+      if (uncleared.length === 0) {
+        itemsHtml.innerHTML = '<div style="text-align:center;color:#aaa;padding:12px 0;">✨ 目前無未結清項目</div>';
+      } else {
+        uncleared.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'export-item';
+          const splitInfo = item.splitType === 'equal' ? '均分' : `V:${item.customShares.Vivian.toFixed(0)} / S:${item.customShares.Suzu.toFixed(0)}`;
+          div.innerHTML = `<span class="left">${item.name} (${item.payer} · ${splitInfo})</span><span class="right">${item.currency} ${item.amount}</span>`;
+          itemsHtml.appendChild(div);
+        });
+      }
+      
       let vPaid=0, sPaid=0, vOwn=0, sOwn=0;
-      billsList.forEach(item => {
-        if (item.cleared) return;
+      uncleared.forEach(item => {
         const f = item.currency==='JPY'?1:(1/rate);
         const a = item.amount*f;
         if (item.payer==='Vivian') vPaid+=a; else sPaid+=a;
         vOwn+=item.customShares.Vivian*f; sOwn+=item.customShares.Suzu*f;
       });
       const vb = vPaid - vOwn, sb = sPaid - sOwn;
-      text += `📊 最終結算 (未結清)\nVivian 代付: ¥${vPaid.toFixed(0)} / $${(vPaid*rate).toFixed(1)}\nSuzu 代付: ¥${sPaid.toFixed(0)} / $${(sPaid*rate).toFixed(1)}\n`;
-      if (Math.abs(vb)<0.1) text += '✨ 完美平衡 ✨\n';
-      else if (vb<0) text += `👉 Vivian 應付 Suzu: ¥${Math.abs(vb).toFixed(0)} ($${(Math.abs(vb)*rate).toFixed(1)})\n`;
-      else text += `👉 Suzu 應付 Vivian: ¥${Math.abs(sb).toFixed(0)} ($${(Math.abs(sb)*rate).toFixed(1)})\n`;
-      text += '\n💖 推活愉快！';
-      const ta = document.createElement('textarea');
-      ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-      showToast('📤 明細已複製到剪貼簿');
-    }
-
-    function convertCurrency(dir) {
-      const rate = JPY_TO_HKD_RATE;
-      if (dir === 'jpy') {
-        const jpy = parseFloat(document.getElementById('calc-jpy').value) || 0;
-        document.getElementById('calc-hkd').value = (jpy * rate).toFixed(2);
+      let totalText = '';
+      if (uncleared.length === 0) totalText = '✨ 全部已結清 ✨';
+      else if (Math.abs(vb)<0.1) totalText = '👌 完美平衡！';
+      else if (vb<0) totalText = `👉 Vivian 應付 Suzu: ¥${Math.abs(vb).toFixed(0)} ($${(Math.abs(vb)*rate).toFixed(1)})`;
+      else totalText = `👉 Suzu 應付 Vivian: ¥${Math.abs(sb).toFixed(0)} ($${(Math.abs(sb)*rate).toFixed(1)})`;
+      document.getElementById('export-total-text').textContent = totalText;
+      
+      const historyList = document.getElementById('export-history-list');
+      historyList.innerHTML = '';
+      if (settlementHistory.length === 0) {
+        historyList.innerHTML = '<div style="text-align:center;color:#ccc;padding:6px 0;font-size:11px;">尚無歷史結算記錄</div>';
       } else {
-        const hkd = parseFloat(document.getElementById('calc-hkd').value) || 0;
-        document.getElementById('calc-jpy').value = (hkd / rate).toFixed(0);
+        const recent = [...settlementHistory].reverse().slice(0, 10);
+        recent.forEach(record => {
+          const div = document.createElement('div');
+          div.className = 'export-history-item';
+          div.innerHTML = `<span>${record.time}</span><span>${record.result}</span>`;
+          historyList.appendChild(div);
+        });
+        if (settlementHistory.length > 10) {
+          const more = document.createElement('div');
+          more.className = 'export-history-item';
+          more.style.color = '#bbb';
+          more.style.fontStyle = 'italic';
+          more.innerHTML = `<span>... 還有 ${settlementHistory.length - 10} 筆記錄</span>`;
+          historyList.appendChild(more);
+        }
       }
+      
+      html2canvas(container, { scale: 2, backgroundColor: '#ffffff', allowTaint: false, useCORS: true, logging: false })
+        .then(canvas => {
+          const link = document.createElement('a');
+          link.download = `東京推活帳單_${now.getFullYear()}_${(now.getMonth()+1).toString().padStart(2,'0')}_${now.getDate().toString().padStart(2,'0')}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          showToast('📸 圖片已匯出');
+        }).catch(err => { console.error(err); showToast('⚠️ 圖片匯出失敗，請重試'); });
     }
 
     function showToast(msg) {
@@ -671,13 +1483,30 @@
       setTimeout(() => { t.className = "fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none"; }, 2500);
     }
 
+    function convertCurrency(dir) {
+      const rate = currentRate;
+      if (dir === 'jpy') {
+        const jpy = parseFloat(document.getElementById('calc-jpy').value) || 0;
+        document.getElementById('calc-hkd').value = (jpy * rate).toFixed(2);
+      } else {
+        const hkd = parseFloat(document.getElementById('calc-hkd').value) || 0;
+        document.getElementById('calc-jpy').value = (hkd / rate).toFixed(0);
+      }
+    }
+
     window.onload = function() {
       lucide.createIcons();
+      fetchRealTimeRate();
+      updateWeather(1);
+      updateFlights(1);
       switchDay(1);
       recalculateBills();
       detailVisible = false;
       document.getElementById('itinerary-detail').classList.add('hidden');
       document.getElementById('toggle-icon').innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
+      toggleSplitUI();
+      // 載入已儲存的登機牌
+      loadBoardingPassFromStorage();
       lucide.createIcons();
     };
   </script>
