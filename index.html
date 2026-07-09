@@ -108,28 +108,76 @@
 </head>
 <body>
 
-  <!-- 標題 header 保持不變 -->
   <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b-2 border-[#ffd9de] px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-2"><span class="text-2xl">✨</span><div><h1 class="text-md font-bold text-[#e48070]">東京推活之旅</h1><p class="text-[10px] text-gray-400">Vivian & Suzu 專屬 💖</p></div></div>
     <div class="bg-[#fdf0f2] text-[#e48070] text-xs px-4 py-1.5 rounded-full font-bold border border-[#ffd9de]">推活指南</div>
   </header>
 
   <main class="max-w-md mx-auto px-4 mt-4 space-y-6">
-    <!-- 分頁按鈕 保持不變 -->
     <div class="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-2xl border border-[#ffd9de] shadow-sm">
       <button onclick="switchTab('itinerary')" id="tab-itinerary" class="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5"><i data-lucide="calendar" class="w-4 h-4"></i><span>行程表</span></button>
       <button onclick="switchTab('billing')" id="tab-billing" class="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 text-gray-500 hover:bg-[#fdf0f2] flex flex-col items-center justify-center gap-0.5"><i data-lucide="wallet" class="w-4 h-4"></i><span>多人記帳</span></button>
       <button onclick="switchTab('rate')" id="tab-rate" class="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 text-gray-500 hover:bg-[#fdf0f2] flex flex-col items-center justify-center gap-0.5"><i data-lucide="refresh-cw" class="w-4 h-4"></i><span>匯率轉換</span></button>
     </div>
 
-    <!-- 行程表 section (保持不變) -->
     <section id="sec-itinerary" class="space-y-4">
-      <!-- 內容與原代碼相同，此處省略以節省篇幅，但保留完整功能 -->
-      <!-- 實際使用時請將完整行程表內容放回 -->
-      <div class="cute-card p-4 text-center text-gray-400 text-sm">📅 行程表內容已保留 (代碼完整)</div>
+      <div class="flex gap-2 overflow-x-auto no-scrollbar py-2">
+        <button onclick="switchDay(1)" id="day-btn-1" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm day-btn-active"><p class="text-xs text-opacity-80">Day 1</p><p class="text-xs font-bold mt-0.5">7月9日 (四)</p></button>
+        <button onclick="switchDay(2)" id="day-btn-2" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm"><p class="text-xs text-gray-400">Day 2</p><p class="text-xs font-bold text-gray-600 mt-0.5">7月10日 (五)</p></button>
+        <button onclick="switchDay(3)" id="day-btn-3" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm"><p class="text-xs text-gray-400">Day 3</p><p class="text-xs font-bold text-gray-600 mt-0.5">7月11日 (六)</p></button>
+        <button onclick="switchDay(4)" id="day-btn-4" class="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm"><p class="text-xs text-gray-400">Day 4</p><p class="text-xs font-bold text-gray-600 mt-0.5">7月12日 (日)</p></button>
+      </div>
+
+      <div class="weather-card" id="weather-card">
+        <div><div class="desc" id="weather-desc">☀️ 晴天</div><div class="temp" id="weather-temp">28°C</div></div>
+        <div style="text-align:right;"><div style="font-size:12px;color:#888;" id="weather-location">📍 東京</div><div class="umbrella-tip" id="umbrella-tip">☂️ 無需帶傘</div></div>
+      </div>
+
+      <div id="flight-section" class="cute-card p-4 space-y-2">
+        <div class="flight-toggle" onclick="toggleFlightDetail()">
+          <div class="flex items-center gap-2"><i data-lucide="plane" class="w-4 h-4 text-[#e48070]"></i><span class="text-sm font-bold text-[#e48070]">✈️ 航班資訊</span></div>
+          <span class="arrow" id="flight-arrow"><i data-lucide="chevron-down" class="w-4 h-4"></i></span>
+        </div>
+        <div class="flight-detail" id="flight-detail">
+          <div id="flight-depart" class="flight-card" style="margin-bottom:8px;">
+            <div class="flight-info"><span class="flight-no">UO 624</span><span class="flight-route">香港 (HKG) → 東京羽田 (HND)</span><span class="flight-time">🛫 23:35 (HKT) · 🛬 05:00 (JST) 翌日</span><span style="font-size:10px;color:#888;">🧳 香港出發：T2 辦理登機 → T1 登機</span></div>
+            <span class="flight-status">✅ 已確認</span>
+          </div>
+          <div id="flight-return" class="flight-card">
+            <div class="flight-info"><span class="flight-no">UO 849</span><span class="flight-route">東京羽田 (HND) → 香港 (HKG)</span><span class="flight-time">🛫 15:45 (JST) · 🛬 19:35 (HKT)</span><span style="font-size:10px;color:#888;">🧳 羽田機場：T3 國際線出境</span></div>
+            <span class="flight-status">✅ 已確認</span>
+          </div>
+          <div id="departure-tip" class="flight-tip">💡 <strong>香港出發攻略：</strong> HK Express 需先到 <strong>T2</strong>（C 區）辦理登機及寄艙行李，然後乘搭接駁巴士或步行至 <strong>T1</strong> 進行安檢及登機。建議預留至少 <strong>2.5 小時</strong> 前到達機場。</div>
+          <div class="boarding-pass-area">
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:11px;color:#888;">🎫 電子登機牌</span>
+              <span class="upload-btn" onclick="document.getElementById('bp-file-input').click()">📤 上傳圖片</span>
+              <input type="file" id="bp-file-input" accept="image/*" onchange="uploadBoardingPass(this.files[0])">
+              <span class="upload-btn" style="background:#eee;color:#888;" onclick="removeBoardingPass()">🗑️ 移除</span>
+            </div>
+            <div id="bp-preview-container" style="display:none;margin-top:6px;"><img id="bp-preview-img" class="bp-preview" alt="登機牌預覽"><div class="bp-filename" id="bp-filename"></div></div>
+          </div>
+          <div class="text-[10px] text-gray-400 text-center pt-2 border-t border-[#ffd9de] mt-2">💡 請於起飛前 2 小時到達機場辦理登機</div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-[#fdf0f2] to-[#fff5f6] p-4 rounded-2xl border border-[#ffd9de] relative overflow-hidden cursor-pointer" onclick="toggleDetail()">
+        <div class="absolute -right-6 -bottom-6 text-6xl opacity-10">✨</div>
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold text-[#e48070] uppercase tracking-wider flex items-center gap-1"><i data-lucide="map" class="w-3.5 h-3.5"></i> 今日行程簡介</h3>
+          <span id="toggle-icon" class="text-[#e48070] text-sm"><i data-lucide="chevron-down" class="w-4 h-4"></i></span>
+        </div>
+        <div id="route-flow" class="text-xs leading-relaxed text-gray-600 font-medium mt-1"></div>
+        <div id="wakeup-tip" class="text-xs text-[#e48070] font-bold mt-1"></div>
+        <div id="conflict-warning" class="conflict-warning hidden"></div>
+      </div>
+
+      <div id="itinerary-detail" class="space-y-4 hidden">
+        <div id="itinerary-cards" class="space-y-4"></div>
+        <button onclick="openAddItemModal()" class="w-full py-3 rounded-2xl border-2 border-dashed border-[#ffd9de] text-[#e48070] font-bold text-sm hover:bg-[#fdf0f2] transition-all flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> 新增行程</button>
+      </div>
     </section>
 
-    <!-- ====== 記帳 section (修正 localStorage 儲存) ====== -->
     <section id="sec-billing" class="space-y-4 hidden">
       <div class="cute-card p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2"><h3 class="font-bold text-[#e48070] flex items-center gap-1"><i data-lucide="plus-circle" class="w-5 h-5"></i><span>新增消費</span></h3><span class="text-xs text-gray-400">精準結算</span></div>
@@ -161,14 +209,10 @@
         </div>
         <button onclick="addBillItem()" class="w-full bg-[#f5b0a0] hover:bg-[#e48070] text-white py-2.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i><span>加入帳單</span></button>
       </div>
-
-      <!-- 消費明細列表 -->
       <div class="cute-card p-4 space-y-3">
         <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2"><h3 class="font-bold text-[#e48070] text-sm flex items-center gap-1"><i data-lucide="list" class="w-4 h-4"></i><span>消費明細</span></h3><span id="bill-count" class="text-xs text-gray-400 font-bold">共 0 筆</span></div>
         <div id="bill-items-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-1"><p class="text-xs text-gray-400 text-center py-6">尚無消費紀錄 📝</p></div>
       </div>
-
-      <!-- 最終結算區塊 -->
       <div class="cute-card p-4 bg-gradient-to-br from-[#fdf0f2] to-white border-2 border-[#fccfc4] space-y-4">
         <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2"><h3 class="font-bold text-[#e48070] text-sm flex items-center gap-1"><i data-lucide="calculator" class="w-4 h-4"></i><span>最終結算</span></h3><div class="flex items-center gap-1 text-[11px] text-gray-500"><span>匯率 JPY/HKD</span><input type="number" id="settle-rate" value="0.052" step="0.001" onchange="recalculateBills()" class="w-14 text-center border border-[#ffd9de] rounded bg-white font-bold text-xs"></div></div>
         <div class="bg-white p-3.5 rounded-2xl border border-[#ffd9de] shadow-sm space-y-2">
@@ -188,7 +232,6 @@
       <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">訊息</div>
     </section>
 
-    <!-- 匯率轉換 section (保持不變) -->
     <section id="sec-rate" class="space-y-4 hidden">
       <div class="cute-card p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-[#ffd9de] pb-2"><h3 class="font-bold text-[#e48070] flex items-center gap-1"><i data-lucide="refresh-cw" class="w-5 h-5"></i><span>匯率計算器 JPY ⇄ HKD</span></h3><span id="rate-update-time" class="text-[10px] text-gray-400"></span></div>
@@ -201,99 +244,366 @@
     </section>
   </main>
 
-  <!-- 其餘 modal 與 export container 保持不變，為節省篇幅此處省略，但實際使用需保留 -->
-  <div id="reservation-modal" class="reservation-modal hidden" onclick="if(event.target===this) closeReservation()"><div class="reservation-modal-content"><div class="close-btn" onclick="closeReservation()">✕</div><h3 id="modal-title" class="font-bold text-[#e48070] text-lg mt-2">預約截圖</h3><img id="modal-image" src="" alt="預約截圖" style="width:100%;border-radius:16px;margin-top:8px;"><p id="modal-caption" class="text-xs text-gray-500 mt-2 text-center"></p></div></div>
-  <div id="edit-modal" class="edit-modal hidden" onclick="if(event.target===this) closeEditModal()"><div class="edit-modal-content"><h3 id="edit-modal-title" class="font-bold text-[#e48070] text-lg">編輯行程</h3><label>📍 地點名稱</label><input type="text" id="edit-title" placeholder="輸入地點名稱"><div style="margin-top:6px;"><button class="btn-update" onclick="updateItineraryDetails()" style="width:100%;padding:8px;border-radius:12px;font-weight:bold;font-size:12px;">🔄 更新行程詳情</button></div><div class="manual-fields" id="manual-fields"><div class="hint">⚠️ 未找到匹配地點，請手動輸入：</div><label>📍 地址</label><input type="text" id="edit-manual-address" placeholder="請輸入詳細地址"><label>📝 行程詳情</label><textarea id="edit-manual-details" rows="2" placeholder="請輸入行程詳情"></textarea></div><label>⏰ 預計時間</label><input type="time" id="edit-time" value="12:00"><div class="time-hint">💡 行程將按時間自動排序插入</div><label>🔒 是否為預約行程</label><select id="edit-is-reservation"><option value="false">否</option><option value="true">是</option></select><label>🚆 交通方式</label><input type="text" id="edit-transport"><label>💡 小貼士</label><textarea id="edit-tips" rows="2"></textarea><label>🗺️ 目的地地址</label><input type="text" id="edit-address"><label>📸 預約詳情圖片</label><input type="text" id="edit-screenshot"><label>📱 Instagram 連結</label><input type="text" id="edit-instagram"><label>⏰ 截止時間提醒</label><input type="text" id="edit-deadline"><div id="edit-conflict-warning" class="conflict-warning hidden"></div><div class="btn-row"><button class="btn-cancel" onclick="closeEditModal()">取消</button><button class="btn-delete" id="edit-delete-btn" onclick="deleteCurrentItem()">刪除</button><button class="btn-save" onclick="saveEditItem()">儲存</button></div></div></div>
-  <div id="export-container"><div class="export-title">✨ 東京推活之旅 · 結帳對帳單</div><div class="export-sub" id="export-date">日期: 2026/06/28</div><div id="export-items-list"></div><div id="export-history-section"><div class="export-history-title">📋 歷史結算記錄</div><div id="export-history-list"></div></div><div class="export-total" id="export-total-text">👌 完美平衡！</div><div class="export-footer">💖 推活愉快！</div></div>
+  <div id="reservation-modal" class="reservation-modal hidden" onclick="if(event.target===this) closeReservation()">
+    <div class="reservation-modal-content">
+      <div class="close-btn" onclick="closeReservation()">✕</div>
+      <h3 id="modal-title" class="font-bold text-[#e48070] text-lg mt-2">預約截圖</h3>
+      <img id="modal-image" src="" alt="預約截圖" style="width:100%;border-radius:16px;margin-top:8px;">
+      <p id="modal-caption" class="text-xs text-gray-500 mt-2 text-center"></p>
+    </div>
+  </div>
+
+  <div id="edit-modal" class="edit-modal hidden" onclick="if(event.target===this) closeEditModal()">
+    <div class="edit-modal-content">
+      <h3 id="edit-modal-title" class="font-bold text-[#e48070] text-lg">編輯行程</h3>
+      <label>📍 地點名稱</label>
+      <input type="text" id="edit-title" placeholder="輸入地點名稱，如：新宿Masala Dining">
+      <div style="margin-top:6px;"><button class="btn-update" onclick="updateItineraryDetails()" style="width:100%;padding:8px;border-radius:12px;font-weight:bold;font-size:12px;">🔄 更新行程詳情（自動匹配地址、導航、交通指南）</button></div>
+      <div class="manual-fields" id="manual-fields">
+        <div class="hint">⚠️ 未找到匹配地點，請手動輸入以下資訊：</div>
+        <label>📍 地址</label><input type="text" id="edit-manual-address" placeholder="請輸入詳細地址">
+        <label>📝 行程詳情</label><textarea id="edit-manual-details" rows="2" placeholder="請輸入行程詳情（如：餐廳特色、營業時間等）"></textarea>
+      </div>
+      <label>⏰ 預計時間</label><input type="time" id="edit-time" value="12:00">
+      <div class="time-hint">💡 行程將按時間自動排序插入，後續非預約行程將自動調整</div>
+      <label>🔒 是否為預約行程</label>
+      <select id="edit-is-reservation"><option value="false">否（將隨前方行程自動調整時間）</option><option value="true">是（時間固定，不隨其他行程變動）</option></select>
+      <label>🚆 交通方式</label><input type="text" id="edit-transport" placeholder="自動生成">
+      <label>💡 小貼士</label><textarea id="edit-tips" rows="2" placeholder="自動生成"></textarea>
+      <label>🗺️ 目的地地址</label><input type="text" id="edit-address" placeholder="用於導航的地址">
+      <label>📸 預約詳情圖片</label><input type="text" id="edit-screenshot" placeholder="圖片檔名，如：reservation.jpg">
+      <label>📱 Instagram 連結</label><input type="text" id="edit-instagram" placeholder="https://www.instagram.com/xxx/">
+      <label>⏰ 截止時間提醒 (選填)</label><input type="text" id="edit-deadline" placeholder="例：🔔 最晚 08:40 要離開">
+      <div id="edit-conflict-warning" class="conflict-warning hidden"></div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeEditModal()">取消</button>
+        <button class="btn-delete" id="edit-delete-btn" onclick="deleteCurrentItem()">刪除</button>
+        <button class="btn-save" onclick="saveEditItem()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="export-container">
+    <div class="export-title">✨ 東京推活之旅 · 結帳對帳單</div>
+    <div class="export-sub" id="export-date">日期: 2026/06/28</div>
+    <div id="export-items-list"></div>
+    <div id="export-history-section"><div class="export-history-title">📋 歷史結算記錄</div><div id="export-history-list"></div></div>
+    <div class="export-total" id="export-total-text">👌 完美平衡！</div>
+    <div class="export-footer">💖 推活愉快！</div>
+  </div>
 
   <script>
-    // ==================== 實時匯率與其他函數 (保持原樣) ====================
+    // ==================== 實時匯率 ====================
     let currentRate=0.052;
-    async function fetchRealTimeRate(){try{const r=await fetch('https://api.exchangerate-api.com/v4/latest/JPY'),d=await r.json();if(d.rates&&d.rates.HKD){currentRate=d.rates.HKD;document.getElementById('rate-jpy-to-hkd').textContent=currentRate.toFixed(4);document.getElementById('rate-hkd-to-jpy').textContent=(1/currentRate).toFixed(2);document.getElementById('rate-update-time').textContent='更新: '+new Date().toLocaleTimeString();document.getElementById('settle-rate').value=currentRate;recalculateBills();showToast('✅ 匯率已更新');}}catch(e){console.warn('匯率 API 獲取失敗',e);}}
+    async function fetchRealTimeRate(){try{const r=await fetch('https://api.exchangerate-api.com/v4/latest/JPY'),d=await r.json();if(d.rates&&d.rates.HKD){currentRate=d.rates.HKD;document.getElementById('rate-jpy-to-hkd').textContent=currentRate.toFixed(4);document.getElementById('rate-hkd-to-jpy').textContent=(1/currentRate).toFixed(2);document.getElementById('rate-update-time').textContent='更新: '+new Date().toLocaleTimeString();document.getElementById('settle-rate').value=currentRate;recalculateBills();showToast('✅ 匯率已更新');}}catch(e){console.warn('匯率 API 獲取失敗',e);document.getElementById('rate-jpy-to-hkd').textContent='0.0520';document.getElementById('rate-hkd-to-jpy').textContent='19.23';}}
 
-    // ==================== 記帳核心 (加入 localStorage 儲存與載入) ====================
-    let billsList = [];
-    let settlementHistory = [];
-    let receiptItems = [];
-    let receiptTotal = 0;
+    // ==================== 地點資料庫 ====================
+    const placeDatabase=[
+      {name:'羽田機場',address:'東京都大田區羽田機場3-3-2',transport:'京急空港線直達羽田機場T3，約25分鐘',tips:'💡 羽田機場T3為國際線航廈，入境後可搭乘京急線往市區。',map:'https://www.google.com/maps/dir/?api=1&destination=Haneda+Airport+Terminal+3',keywords:['羽田','haneda','羽田空港','hnd','東京國際機場']},
+      {name:'五反田',address:'東京都品川區西五反田1-1-1',transport:'JR山手線至五反田站，步行約3分鐘',tips:'💡 五反田站周邊有許多餐廳與飯店，交通便利。',map:'https://www.google.com/maps/dir/?api=1&destination=Gotanda+Station',keywords:['五反田','gotanda','五反田駅']},
+      {name:'澀谷',address:'東京都澀谷區澀谷1-1-1',transport:'JR山手線至澀谷站，多個出口可達',tips:'💡 澀谷是東京最繁忙的十字路口，周邊有眾多百貨與商店。',map:'https://www.google.com/maps/dir/?api=1&destination=Shibuya+Station',keywords:['澀谷','shibuya','渋谷','澀谷站']},
+      {name:'原宿',address:'東京都澀谷區神宮前1-1-1',transport:'JR山手線至原宿站，表參道口出站',tips:'💡 原宿是東京年輕文化與時尚的發源地，竹下通、表參道皆在此。',map:'https://www.google.com/maps/dir/?api=1&destination=Harajuku+Station',keywords:['原宿','harajuku','はらじゅく']},
+      {name:'池袋',address:'東京都豐島區池袋1-1-1',transport:'JR山手線至池袋站，東口或西口可達Sunshine City',tips:'💡 池袋是東京三大副都心之一，Sunshine City、namco皆在此。',map:'https://www.google.com/maps/dir/?api=1&destination=Ikebukuro+Station',keywords:['池袋','ikebukuro','いけぶくろ']},
+      {name:'秋葉原',address:'東京都千代田區外神田1-1-1',transport:'JR山手線至秋葉原站，電器街口出站',tips:'💡 秋葉原是著名的電器街與動漫聖地，Radio會館、namco皆在此。',map:'https://www.google.com/maps/dir/?api=1&destination=Akihabara+Station',keywords:['秋葉原','akihabara','あきはばら','電器街']},
+      {name:'橫濱',address:'神奈川縣橫濱市中區新港1-1-1',transport:'JR東海道線至橫濱站，轉乘港未來線至元町中華街站',tips:'💡 橫濱是東京近郊的港灣城市，中華街、紅磚倉庫為著名景點。',map:'https://www.google.com/maps/dir/?api=1&destination=Yokohama+Station',keywords:['橫濱','yokohama','横浜','よこはま']},
+      {name:'日暮里',address:'東京都荒川區西日暮里1-1-1',transport:'JR山手線至日暮里站，可轉乘Skyliner往成田機場',tips:'💡 日暮里站可轉乘Skyliner直達成田機場，車程約36分鐘。',map:'https://www.google.com/maps/dir/?api=1&destination=Nippori+Station',keywords:['日暮里','nippori','にっぽり']},
+      {name:'成田機場',address:'千葉縣成田市成田機場1-1',transport:'Skyliner直達成田機場T2，約36分鐘',tips:'💡 成田機場T2為國際線主要航廈，建議提前2小時到達。',map:'https://www.google.com/maps/dir/?api=1&destination=Narita+Airport+Terminal+2',keywords:['成田','narita','成田空港','nrt']},
+      {name:'新大久保',address:'東京都新宿區大久保1-1-1',transport:'JR山手線至新大久保站，步行約3分鐘',tips:'💡 新大久保是東京的韓國城，有許多韓式料理與咖啡廳。',map:'https://www.google.com/maps/dir/?api=1&destination=Shin-Okubo+Station',keywords:['新大久保','shin-okubo','しんおおくぼ']},
+      {name:'新宿Masala Dining',address:'東京都新宿區新宿3-14-1 新宿三丁目ビル 5F',transport:'JR山手線至新宿站，步行約5分鐘；或地鐵新宿三丁目站直達',tips:'💡 正宗印度料理餐廳，午餐時段提供自助餐，人氣極高建議提前預約。',map:'https://www.google.com/maps/dir/?api=1&destination=Masala+Dining+Shinjuku',keywords:['masala dining','新宿masala','マサラダイニング','印度料理','masala']},
+      {name:'Ginger Garden AOYAMA',address:'東京都港區南青山5-4-41 グラッセリア青山 1F',transport:'表參道站步行約8分鐘',tips:'💡 預約編號：PZUN4DN6Z9｜電話：08076152945｜2名｜¥6,800/人（含飲放題）',map:'https://www.google.com/maps/dir/?api=1&destination=Ginger+Garden+AOYAMA',keywords:['ginger garden','ジンジャーガーデン','青山下午茶','ginger']},
+      {name:'HAUTE COUTURE CAFE OMOTESANDO',address:'東京都澀谷區神宮前5-10-1',transport:'表參道站步行約5分鐘',tips:'💡 預約編號：PAELZEMGUA｜電話：08076152945｜2名｜¥6,450/人（期間限定白桃Afternoon Tea）',map:'https://www.google.com/maps/dir/?api=1&destination=HAUTE+COUTURE+CAFE+OMOTESANDO',keywords:['haute couture','オートクチュール','表參道下午茶','浮誇下午茶']},
+      {name:'Liqumu 原宿店',address:'東京都澀谷區神宮前6-1-1',transport:'千代田線1站至表參道站，B1出口手扶梯',tips:'💡 色彩美學冰淇淋，預約13:00時段。出口：B1出口手扶梯。',map:'https://www.google.com/maps/dir/?api=1&destination=Liqumu+Harajuku',keywords:['liqumu','リクム','原宿冰淇淋','色彩冰淇淋']},
+      {name:'Aries 澀谷西口店',address:'東京都澀谷區澀谷2-1-1',transport:'澀谷站西口步行5-8分鐘',tips:'💇‍♀️ Vivian 專屬編髮預約 (09:15)。請準時到達，預計 10:00 完成。',map:'https://www.google.com/maps/dir/?api=1&destination=Aries+Shibuya',keywords:['aries','アリエス','澀谷編髮','編髮']},
+      {name:'涮涮鍋塚田 澀谷Scramble店',address:'東京都澀谷區澀谷2-24-12 澀谷Scramble Square 12F',transport:'澀谷站直達 Scramble Square 餐廳樓層',tips:'🍽️ 聯動：與時音在澀谷 Scramble 吃涮涮鍋聚餐。',map:'https://www.google.com/maps/dir/?api=1&destination=Shibuya+Scramble+Square',keywords:['涮涮鍋','塚田','tsukada','しゃぶしゃぶ','澀谷晚餐']},
+      {name:'橫濱新格蘭飯店 La Terrasse',address:'神奈川縣橫濱市中區山下町10 ホテルニューグランド 1F',transport:'元町中華街站1號出口手扶梯，步行1分鐘',tips:'🍽️ 優雅下午茶，預計停留至 14:00。',map:'https://www.google.com/maps/dir/?api=1&destination=Hotel+New+Grand',keywords:['new grand','ニューグランド','橫濱下午茶','la terrasse']},
+      {name:'新橫濱拉麵博物館',address:'神奈川縣橫濱市港北區新橫濱2-14-21',transport:'新橫濱站8號出口電梯，步行約5分鐘',tips:'🎫 18Trip 聯動場販預約，並品嚐拉麵。',map:'https://www.google.com/maps/dir/?api=1&destination=Shinyokohama+Ramen+Museum',keywords:['拉麵博物館','ramen museum','新橫濱拉麵','らーめん']},
+      {name:'My fave Café 新大久保店',address:'東京都新宿區大久保1-12-3',transport:'新大久保站步行3分鐘',tips:'🧵 拼製專屬不織布娃娃，預計停留至 12:30。',map:'https://www.google.com/maps/dir/?api=1&destination=My+fave+Cafe+Shin-Okubo',keywords:['my fave','マイフェイブ','拼製娃娃','不織布']},
+      {name:'Laforet 原宿',address:'東京都澀谷區神宮前1-11-6',transport:'原宿站表參道口步行5分鐘',tips:'🛍️ 失憶投捕 Pop-up Store 購物，預計停留至 15:00。',map:'https://www.google.com/maps/dir/?api=1&destination=Laforet+Harajuku',keywords:['laforet','ラフォーレ','原宿百貨']},
+      {name:'namco 池袋店',address:'東京都豐島區東池袋1-1-1',transport:'池袋站東口步行5分鐘',tips:'🎯 namco 池袋店，衝刺夾娃娃！',map:'https://www.google.com/maps/dir/?api=1&destination=namco+Ikebukuro',keywords:['namco','ナムコ','池袋夾娃娃']},
+      {name:'Sunshine City 池袋',address:'東京都豐島區東池袋3-1-1',transport:'池袋站東口步行8分鐘',tips:'🛍️ 逛 Rojita、扭蛋、K-BOOKS 總店。',map:'https://www.google.com/maps/dir/?api=1&destination=Sunshine+City+Ikebukuro',keywords:['sunshine city','サンシャイン','池袋購物']},
+      {name:'招財貓 KTV 池袋西口店',address:'東京都豐島區西池袋1-1-1',transport:'池袋站西口步行3分鐘',tips:'🎤 招財貓 KTV 池袋西口店，1小時聯動活動。',map:'https://www.google.com/maps/dir/?api=1&destination=Maneki+Neko+KTV+Ikebukuro',keywords:['招財貓','maneki neko','ktv','卡拉OK','池袋西口']},
+      {name:'namco 秋葉原店',address:'東京都千代田區外神田1-1-1',transport:'秋葉原站步行3分鐘',tips:'🎯 最後娃娃存貨搜刮與檢查。',map:'https://www.google.com/maps/dir/?api=1&destination=namco+Akihabara',keywords:['namco','ナムコ','秋葉原夾娃娃']},
+      {name:'秋葉原 Radio 會館',address:'東京都千代田區外神田1-15-16',transport:'秋葉原站步行2分鐘',tips:'🛍️ 秋葉原 AmiAmi 及 Radio 會館扭蛋補漏。',map:'https://www.google.com/maps/dir/?api=1&destination=Akihabara+Radio+Kaikan',keywords:['radio會館','radio kaikan','秋葉原扭蛋']},
+      {name:'吉祥寺',address:'東京都武藏野市吉祥寺本町1-1-1',transport:'JR中央線快速至吉祥寺站，北口步行3分鐘',tips:'🍽️ Cafe Ksyn\'n 吉祥寺浪漫網美推活下午茶。',map:'https://www.google.com/maps/dir/?api=1&destination=Kichijoji+Station',keywords:['吉祥寺','kichijoji','きちじょうじ']},
+      {name:'Cafe Ksyn\'n 吉祥寺',address:'東京都武藏野市吉祥寺本町1-1-1',transport:'JR中央線快速至吉祥寺站，北口步行3分鐘',tips:'🍽️ 攜帶投捕周邊進店，浪漫網美推活下午茶。',map:'https://www.google.com/maps/dir/?api=1&destination=Kichijoji+Station',keywords:['cafe ksynn','吉祥寺咖啡','ksynn']}
+    ];
 
-    // 儲存記帳數據
-    function saveBillsData() {
-      try {
-        const data = {
-          bills: billsList,
-          history: settlementHistory
-        };
-        localStorage.setItem('billsData', JSON.stringify(data));
-      } catch(e) { console.warn('儲存失敗', e); }
-    }
+    // ==================== 模糊匹配 ====================
+    function fuzzyMatchPlace(input){if(!input||!input.trim())return null;const n=input.trim().toLowerCase();for(const p of placeDatabase){if(p.name.toLowerCase()===n)return p;}for(const p of placeDatabase){for(const k of p.keywords){if(k.toLowerCase()===n)return p;}}let best=null,bestScore=0;for(const p of placeDatabase){if(p.name.toLowerCase().includes(n)||n.includes(p.name.toLowerCase())){const s=Math.min(p.name.length,n.length);if(s>bestScore){bestScore=s;best=p;}}for(const k of p.keywords){const kw=k.toLowerCase();if(kw.includes(n)||n.includes(kw)){const s=Math.min(kw.length,n.length);if(s>bestScore){bestScore=s;best=p;}}}}if(bestScore<2)return null;return best;}
 
-    // 載入記帳數據
-    function loadBillsData() {
-      try {
-        const raw = localStorage.getItem('billsData');
-        if (raw) {
-          const data = JSON.parse(raw);
-          if (data.bills) billsList = data.bills;
-          if (data.history) settlementHistory = data.history;
+    function updateItineraryDetails(){const t=document.getElementById('edit-title').value.trim();if(!t){showToast('請先輸入地點名稱');return;}const m=fuzzyMatchPlace(t),mf=document.getElementById('manual-fields');if(m){mf.classList.remove('show');document.getElementById('edit-transport').value=m.transport;document.getElementById('edit-tips').value=m.tips;document.getElementById('edit-address').value=m.address||m.map||'';showToast('✅ 已匹配到「'+m.name+'」的行程詳情');}else{mf.classList.add('show');showToast('⚠️ 未找到匹配地點，請手動輸入地址與詳情');}}
+
+    // ==================== 行程資料 (完整更新) ====================
+    let editableItineraryData={
+      1:{date:"7月9日 (四)",flow:"🛁 羽田T3淋浴 ➔ 🏨 五反田寄存 ➔ ☕ 澀谷早餐 ➔ 💇 Aries編髮 ➔ 🏛️ Aoppella特展 ➔ 🚶 自由散策 ➔ 🍽️ Liqumu冰淇淋 ➔ 💥 Laforet失憶投捕 ➔ 🚆 表參道移動 ➔ 🍽️ Ginger Garden下午茶 ➔ 💥 Scramble散策 ➔ 🍽️ 涮涮鍋塚田聚餐",wakeup:"⏰ 請於 04:00 起身，準備出發！",items:[
+        {id:'i1',title:"🛁 羽田機場T3 TIAT Shower Room 梳洗",transport:"入境後直衝 T3 2F TIAT Shower Room",tips:"💡 清晨無痛攻略：¥1,500/30分鐘，無需預約。於 Powder Room 完妝換裝，預計 07:00 前完成。",address:"Haneda+Airport+Terminal+3",deadline:"🔔 最晚 07:00 要離開淋浴室",isReservation:false,time:"05:30"},
+        {id:'i2',title:"🏨 Hotel Mystays 五反田駅前 寄存行李",transport:"京急空港線直達五反田站 (約25分鐘)",tips:"💡 寄存行李於飯店，預計 08:00 前空手全妝出發！",address:"Hotel+MyStays+Gotanda+Ekimae",deadline:"🔔 最晚 08:00 要寄存完畢",isReservation:false,time:"07:15"},
+        {id:'i3',title:"🍽️ 澀谷站周邊精緻美學早餐 (Suzu休憩)",transport:"JR山手線至澀谷站 (約7分鐘)",tips:"💡 Suzu 可於 ESPRESSO D' WORKS yellow 休息，Vivian 稍後前往編髮。",address:"Shibuya+Station",deadline:"🔔 最晚 09:00 要完成早餐",isReservation:false,time:"08:15"},
+        {id:'i4',title:"🏛️ Aries 澀谷西口店 快速編髮 (Vivian)",transport:"步行5-8分鐘",tips:"💇‍♀️ Vivian 專屬編髮預約 (09:15)。請準時到達，預計 10:00 完成。",address:"Aries+Shibuya",deadline:"🔔 Vivian 請於 09:10 前到達 Aries",isReservation:true,time:"09:15",screenshot:'aries.jpg',reservationCaption:"Aries 澀谷西口店 編髮預約 (09:15)",instagram:"https://www.instagram.com/aries_shibuya/",split:{vivian:{label:"💇‍♀️ Vivian 前往編髮",desc:"Aries 澀谷西口店 編髮預約 (09:15-10:00)。",address:"Aries+Shibuya"},suzu:{label:"☕ Suzu 自由探索",desc:"在澀谷站周邊悠閒度過，等待 Vivian 編髮完成。",suggestions:[{name:"📚 澀谷 Tsutaya 書店",address:"Shibuya+Tsutaya"},{name:"🛍️ 澀谷 109",address:"Shibuya+109"}],meetup:"🤝 預計 10:00 於 Aries 店前會合"}}},
+        {id:'i5',title:"🏛️ Aoppella 5週年特展 @ 西武澀谷",transport:"副都心線1站至明治神宮前站",tips:"出口：5號出口電梯（5番出口エレベーター）。西武百貨館內手扶梯可直達會場。1小時參觀。",address:"Seibu+Shibuya",deadline:"🔔 最晚 10:00 要到達會場",isReservation:false,time:"10:00"},
+        {id:'i6',title:"🚶 自由彈性時間：澀谷拍美照與提早移動",transport:"步行散策",tips:"📸 澀谷十字路口拍照，提早移動至原宿竹下通一帶散策。",address:"Shibuya+Crossing",deadline:"🔔 最晚 13:00 要到達 Liqumu",isReservation:false,time:"11:00"},
+        {id:'i7',title:"🍽️ Liqumu 原宿店 色彩美學冰淇淋 (預約13:00)",transport:"千代田線1站至表參道站",tips:"出口：B1出口手扶梯（B1出口エスカレーター）。品嚐特色冰淇淋，預計停留至 14:00。",address:"Liqumu+Harajuku",deadline:"🔔 最晚 13:00 要到達",instagram:"https://www.instagram.com/liqumu/",isReservation:true,time:"13:00",screenshot:'liqumu.jpg',reservationCaption:"Liqumu 原宿店 冰淇淋預約 (13:00)"},
+        {id:'i8',title:"💥 Laforet 原宿：失憶投捕 Pop-up Store",transport:"Laforet 內",tips:"🛍️ 失憶投捕 Pop-up Store 購物衝刺，預計停留至 15:00。",address:"Laforet+Harajuku",deadline:"🔔 最晚 14:00 要到達",isReservation:false,time:"14:00"},
+        {id:'i9',title:"🚆 原宿 ➔ 表參道散步移動",transport:"步行約15分鐘",tips:"沿表參道散步前往 Ginger Garden。",address:"Ginger+Garden+AOYAMA",deadline:"🔔 最晚 15:30 要到達",isReservation:false,time:"15:00"},
+        {id:'i10',title:"🍽️ Ginger Garden AOYAMA 浪漫盒裝下午茶",transport:"步行約10分鐘",tips:"💡 預約編號：PZUN4DN6Z9｜電話：08076152945｜2名｜¥6,800/人（含飲放題）控時延後入場。",address:"Ginger+Garden+AOYAMA",deadline:"🔔 最晚 15:45 要到達",instagram:"https://www.instagram.com/gingergardenaoyama/",screenshot:'gingergarden_jpg.jpg',reservationCaption:"Ginger Garden AOYAMA 預約截圖",isReservation:true,time:"15:30"},
+        {id:'i11',title:"💥 澀谷 Scramble Square 前置散策",transport:"銀座線1站回澀谷站",tips:"前往 Scramble Square 周邊散步，為晚餐做準備。",address:"Shibuya+Scramble+Square",deadline:"🔔 最晚 19:45 要到達餐廳",isReservation:false,time:"18:15"},
+        {id:'i12',title:"🍽️ 涮涮鍋塚田 澀谷Scramble店 (與時音聚餐)",transport:"直達 Scramble Square 餐廳樓層",tips:"聯動：與時音在澀谷 Scramble 吃涮涮鍋聚餐。",address:"Shibuya+Scramble+Square",deadline:"🔔 最晚 19:45 要入座",isReservation:true,time:"19:45"}
+      ]},
+      2:{date:"7月10日 (五)",flow:"🚆 五反田➔橫濱新格蘭 ➔ 🍽️ La Terrasse下午茶 ➔ 🚆 橫濱➔新橫濱 ➔ 🏛️ 18Trip特展 ➔ 🚆 新橫濱➔吉祥寺 ➔ 🍽️ Cafe Ksyn'n ➔ 🚆 吉祥寺➔池袋 ➔ 💥 Sunshine購物 ➔ 💥 招財貓KTV西口",wakeup:"⏰ 請於 08:00 起身，準備跨區移動！",items:[
+        {id:'i13',title:"🚆 五反田 ➔ 橫濱新格蘭飯店",transport:"JR山手線→湘南新宿→港未來線",tips:"出口：元町中華街站1號出口手扶梯（1番出口エスカレーター）。出站後步行1分鐘即可步入飯店大堂。",address:"Hotel+New+Grand",deadline:"🔔 最晚 10:30 要從五反田離開",isReservation:false,time:"10:30"},
+        {id:'i14',title:"🍽️ 橫濱新格蘭飯店 La Terrasse 下午茶",transport:"飯店內直達",tips:"優雅下午茶，預計停留至 14:00。",address:"Hotel+New+Grand",deadline:"🔔 最晚 14:00 要離開",isReservation:true,time:"12:00"},
+        {id:'i15',title:"🚆 橫濱 ➔ 新橫濱拉麵博物館",transport:"港未來線→市營藍線",tips:"出口：新橫濱站8號出口電梯（8番出口エレベーター）。站內轉乘通道較長，請跟隨無障礙指標。",address:"Shinyokohama+Ramen+Museum",deadline:"🔔 最晚 14:45 要從橫濱離開",isReservation:false,time:"14:00"},
+        {id:'i16',title:"🏛️ 18Trip 聯動場販預約 ＆ 拉麵品嚐",transport:"博物館內",tips:"🎫 18Trip 聯動場販預約，並品嚐拉麵。精簡控時至 16:15。",address:"Shinyokohama+Ramen+Museum",deadline:"🔔 最晚 16:15 要離開",isReservation:true,time:"14:45"},
+        {id:'i17',title:"🚆 新橫濱 ➔ 吉祥寺 (橫濱線轉中央線急行)",transport:"橫濱線→中央線快速",tips:"快速移動，預計車程約45分鐘。",address:"Kichijoji+Station",deadline:"🔔 最晚 16:15 要從新橫濱離開",isReservation:false,time:"16:15"},
+        {id:'i18',title:"🍽️ Cafe Ksyn'n 吉祥寺 浪漫網美推活下午茶",transport:"吉祥寺站北口步行3分鐘",tips:"🍽️ 攜帶投捕周邊進店，浪漫網美推活下午茶。",address:"Kichijoji+Station",deadline:"🔔 最晚 17:00 要到達",isReservation:false,time:"17:00",instagram:"https://www.instagram.com/cafe_ksynn/"},
+        {id:'i19',title:"🚆 吉祥寺 ➔ 池袋 (中央線快速至新宿轉山手線)",transport:"中央線快速→JR山手線",tips:"快速移動，預計車程約30分鐘。",address:"Ikebukuro+Station",deadline:"🔔 最晚 18:45 要從吉祥寺離開",isReservation:false,time:"18:15"},
+        {id:'i20',title:"💥 池袋 Sunshine City 購物 (Rojita/扭蛋/K-BOOKS)",transport:"池袋站東口步行5-8分鐘",tips:"🛍️ 逛 Rojita、扭蛋、K-BOOKS 總店，預計停留至 19:45。",address:"Sunshine+City+Ikebukuro",deadline:"🔔 最晚 19:45 要離開",isReservation:false,time:"18:45"},
+        {id:'i21',title:"💥 招財貓 KTV 池袋西口店 1小時聯動活動",transport:"池袋站西口步行3分鐘",tips:"🎤 招財貓 KTV 池袋西口店，1小時聯動活動。",address:"Maneki+Neko+KTV+Ikebukuro",deadline:"🔔 最晚 20:00 要到達",isReservation:true,time:"20:00"}
+      ]},
+      3:{date:"7月11日 (六)",flow:"🚆 五反田➔新大久保 ➔ 🏛️ My fave拼貼 ➔ 💥 池袋K-BOOKS衝刺 ➔ 🚆 池袋➔表參道 ➔ 🍽️ HAUTE COUTURE ➔ 🚆 表參道➔新宿 ➔ 🍽️ Masala Dining ➔ 💥 夜間散策",wakeup:"⏰ 請於 09:00 起身，悠閒手作日！",items:[
+        {id:'i22',title:"🚆 五反田 ➔ 新大久保",transport:"JR山手線直達 (約14分鐘)",tips:"沿主幹道步行5-7分鐘，避開小巷。新大久保站前街道較狹窄。",address:"Shin-Okubo+Station",deadline:"🔔 最晚 11:00 要從五反田離開",isReservation:false,time:"11:00"},
+        {id:'i23',title:"🏛️ My fave Café 快速拼貼專屬不織布配件",transport:"步行3分鐘",tips:"🧵 快速拼貼專屬不織布配件（只做拼貼），預計停留至 12:30。",address:"My+fave+Cafe+Shin-Okubo",deadline:"🔔 最晚 12:30 要離開",isReservation:true,time:"11:30"},
+        {id:'i24',title:"💥 自由彈性時間：移防池袋 K-BOOKS 各大主題分館",transport:"JR山手線至池袋站 (約20分鐘)",tips:"📚 池袋 K-BOOKS 乙女路周邊，動漫周邊終極大衝刺！",address:"Ikebukuro+Station",deadline:"🔔 最晚 15:30 要離開",isReservation:false,time:"12:30"},
+        {id:'i25',title:"🚆 池袋 ➔ 表參道移動",transport:"東京地鐵副都心線直達",tips:"快速移動，約20分鐘。",address:"HAUTE+COUTURE+CAFE+OMOTESANDO",deadline:"🔔 最晚 15:50 要到達",isReservation:false,time:"15:40"},
+        {id:'i26',title:"🍽️ HAUTE COUTURE CAFE OMOTESANDO 浮誇下午茶",transport:"直達",tips:"💡 預約編號：PAELZEMGUA｜電話：08076152945｜2名｜¥6,450/人（不可取消）",address:"HAUTE+COUTURE+CAFE+OMOTESANDO",deadline:"🔔 最晚 16:00 要到達",instagram:"https://www.instagram.com/hautecouture_brunch/",screenshot:'haute.jpg',reservationCaption:"HAUTE COUTURE BRUNCH 預約截圖",isReservation:true,time:"16:00"},
+        {id:'i27',title:"🚆 表參道 ➔ 新宿 (副都心線直達)",transport:"東京地鐵副都心線",tips:"快速移動，約10分鐘。",address:"Masala+Dining+Shinjuku",deadline:"🔔 最晚 18:40 要從表參道離開",isReservation:false,time:"18:10"},
+        {id:'i28',title:"🍽️ 新宿 Masala Dining 奢華雙人起司烤餅與咖哩",transport:"新宿站步行5分鐘",tips:"🍽️ 錯開爽吃：正宗印度料理，起司烤餅與咖哩。",address:"Masala+Dining+Shinjuku",deadline:"🔔 最晚 18:45 要到達",isReservation:false,time:"18:45"},
+        {id:'i29',title:"💥 新宿/澀谷夜間散策與補貨",transport:"自由移動",tips:"💥 夜間散策，まねきねこ/namco 補貨。",address:"Shibuya+Station",deadline:"🔔 自由調整",isReservation:false,time:"20:45"}
+      ]},
+      4:{date:"7月12日 (日)",flow:"🚆 五反田➔秋葉原 ➔ 💥 namco檢查 ➔ 💥 Radio會館補漏 ➔ 🚆 秋葉原➔日暮里 ➔ 🚆 Skyliner➔成田T2 ➔ 🛫 返程航班",wakeup:"⏰ 請於 08:30 起身，準備返程！",items:[
+        {id:'i30',title:"🚆 五反田 ➔ 秋葉原 (行李寄存)",transport:"JR山手線外環 (約18分鐘)",tips:"💡 零拖行秘訣：秋葉原站內中央改札口區域設有智慧型電子置物櫃（支援Suica）。",address:"Akihabara+Station",deadline:"🔔 最晚 10:15 要從五反田離開",isReservation:false,time:"10:15"},
+        {id:'i31',title:"💥 namco 秋葉原店（最後娃娃存貨搜刮）",transport:"步行3分鐘",tips:"🎯 快速檢查娃娃存貨，15分鐘完成。",address:"namco+Akihabara",deadline:"🔔 最晚 11:00 要離開",isReservation:false,time:"10:45"},
+        {id:'i32',title:"💥 秋葉原 AmiAmi ＆ 扭蛋補漏（Radio會館）",transport:"步行2分鐘",tips:"🛍️ 限時大補漏，75分鐘完成。",address:"Akihabara+Radio+Kaikan",deadline:"🔔 最晚 12:15 要取回行李",isReservation:false,time:"11:00"},
+        {id:'i33',title:"🚆 秋葉原 ➔ 日暮里 (JR山手線)",transport:"JR山手線 (約10分鐘)",tips:"快速移動至日暮里站轉乘。",address:"Nippori+Station",deadline:"🔔 最晚 12:25 要從秋葉原離開",isReservation:false,time:"12:15"},
+        {id:'i34',title:"🚆 日暮里 ➔ 成田機場T2 (京成Skyliner)",transport:"京成Skyliner (約38分鐘)",tips:"機場特急，直達成田機場第2航廈。13:03抵達。",address:"Narita+Airport+Terminal+2",deadline:"🔔 最晚 12:25 要到達日暮里",isReservation:false,time:"12:25"},
+        {id:'i35',title:"🛫 成田機場T2 辦理登機與返程",transport:"航班 UO 849 15:45 起飛",tips:"🛫 提前2.5小時到機場，辦理登機、免稅店補貨。15:45 起飛。",address:"Narita+Airport+Terminal+2",deadline:"🔔 最晚 13:05 要到達機場",isReservation:true,time:"13:05"}
+      ]}
+    };
+
+    let currentDay=1,detailVisible=false,activeScreenshot='',editingItemId=null,editingDay=null,billsList=[],settlementHistory=[],receiptItems=[],receiptTotal=0,boardingPassData=null;
+
+    // ==================== 登機牌 ====================
+    function uploadBoardingPass(file){if(!file)return;const r=new FileReader();r.onload=function(e){boardingPassData=e.target.result;const pc=document.getElementById('bp-preview-container'),pi=document.getElementById('bp-preview-img'),fn=document.getElementById('bp-filename');pi.src=boardingPassData;pc.style.display='block';fn.textContent='📎 '+file.name;try{localStorage.setItem('boardingPass',boardingPassData);}catch(e){}showToast('✅ 登機牌已上傳');};r.readAsDataURL(file);}
+    function removeBoardingPass(){boardingPassData=null;document.getElementById('bp-preview-container').style.display='none';document.getElementById('bp-preview-img').src='';document.getElementById('bp-filename').textContent='';try{localStorage.removeItem('boardingPass');}catch(e){}showToast('🗑️ 登機牌已移除');}
+    function loadBoardingPassFromStorage(){try{const s=localStorage.getItem('boardingPass');if(s){boardingPassData=s;const pc=document.getElementById('bp-preview-container'),pi=document.getElementById('bp-preview-img');pi.src=s;pc.style.display='block';document.getElementById('bp-filename').textContent='📎 已儲存的登機牌';}}catch(e){}}
+
+    // ==================== 航班摺疊 ====================
+    let flightDetailOpen=false;
+    function toggleFlightDetail(){flightDetailOpen=!flightDetailOpen;const d=document.getElementById('flight-detail'),a=document.getElementById('flight-arrow');if(flightDetailOpen){d.classList.add('open');a.classList.add('open');}else{d.classList.remove('open');a.classList.remove('open');}lucide.createIcons();}
+
+    // ==================== 天氣 ====================
+    const weatherData={1:{temp:28,desc:'☀️ 晴天',humidity:65,wind:'3級',rain:0,umbrella:false},2:{temp:26,desc:'⛅ 多雲',humidity:70,wind:'2級',rain:10,umbrella:false},3:{temp:24,desc:'🌧️ 陣雨',humidity:82,wind:'4級',rain:70,umbrella:true},4:{temp:27,desc:'☀️ 晴時多雲',humidity:60,wind:'2級',rain:5,umbrella:false}};
+    function updateWeather(d){const w=weatherData[d];if(!w)return;document.getElementById('weather-desc').textContent=w.desc;document.getElementById('weather-temp').textContent=w.temp+'°C';document.getElementById('weather-location').textContent='📍 東京 · 濕度 '+w.humidity+'% · 風 '+w.wind;const tip=document.getElementById('umbrella-tip');if(w.umbrella){tip.textContent='☂️ 記得帶傘！';tip.className='umbrella-tip warning';}else if(w.rain>30){tip.textContent='🌂 建議帶傘備用';tip.className='umbrella-tip warning';}else{tip.textContent='☀️ 無需帶傘';tip.className='umbrella-tip';}}
+
+    // ==================== 智慧接續導航 ====================
+    function getNavLink(item, items, idx) {
+      let origin = 'current+location';
+      let destination = item.address || '';
+      if (!destination) {
+        const match = fuzzyMatchPlace(item.title);
+        if (match) destination = match.address || match.map || '';
+      }
+      if (!destination) {
+        const titleWords = item.title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, ' ').trim();
+        if (titleWords) destination = encodeURIComponent(titleWords);
+      }
+      if (idx > 0) {
+        const prev = items[idx - 1];
+        if (prev && prev.address) {
+          origin = prev.address;
+        } else if (prev) {
+          const prevMatch = fuzzyMatchPlace(prev.title);
+          if (prevMatch) origin = prevMatch.address || prevMatch.map || '';
         }
-      } catch(e) { console.warn('載入失敗', e); }
+      }
+      if (!origin || origin === '') origin = 'current+location';
+      return 'https://www.google.com/maps/dir/' + encodeURIComponent(origin) + '/' + encodeURIComponent(destination);
     }
 
-    // 在所有修改 billsList 的地方呼叫 saveBillsData()
-    // 並在頁面載入時呼叫 loadBillsData()
+    // ==================== 時間動態調整 ====================
+    const DEFAULT_TRAVEL_MINUTES = 20;
+    const DEFAULT_DURATION_MINUTES = 60;
 
+    function autoAdjustTimesWithReservation(day) {
+      const data = editableItineraryData[day];
+      if (!data) return;
+      const sorted = [...data.items].sort((a, b) => {
+        const ta = a.time || '00:00';
+        const tb = b.time || '00:00';
+        return ta.localeCompare(tb);
+      });
+      let hasReservation = false;
+      let reservationIndex = -1;
+      for (let i = 0; i < sorted.length; i++) {
+        if (sorted[i].isReservation) {
+          hasReservation = true;
+          reservationIndex = i;
+          break;
+        }
+      }
+      if (!hasReservation) {
+        for (let i = 0; i < sorted.length - 1; i++) {
+          const current = sorted[i];
+          const next = sorted[i + 1];
+          if (!current.time) continue;
+          const parts = current.time.split(':').map(Number);
+          let mins = parts[0] * 60 + parts[1];
+          mins += DEFAULT_TRAVEL_MINUTES + DEFAULT_DURATION_MINUTES;
+          const hr = Math.floor(mins / 60);
+          const mn = mins % 60;
+          next.time = String(hr).padStart(2, '0') + ':' + String(mn).padStart(2, '0');
+        }
+        return;
+      }
+      if (reservationIndex > 0) {
+        let currentTime = sorted[reservationIndex].time;
+        for (let i = reservationIndex - 1; i >= 0; i--) {
+          const item = sorted[i];
+          if (item.isReservation) {
+            currentTime = item.time;
+            continue;
+          }
+          const parts = currentTime.split(':').map(Number);
+          let mins = parts[0] * 60 + parts[1];
+          mins -= (DEFAULT_TRAVEL_MINUTES + DEFAULT_DURATION_MINUTES);
+          if (mins < 0) mins = 0;
+          const hr = Math.floor(mins / 60);
+          const mn = mins % 60;
+          item.time = String(hr).padStart(2, '0') + ':' + String(mn).padStart(2, '0');
+          currentTime = item.time;
+        }
+      }
+      for (let i = reservationIndex + 1; i < sorted.length; i++) {
+        const item = sorted[i];
+        if (item.isReservation) {
+          showToast('⚠️ 此調整會影響到後續的預約行程「' + item.title + '」，請確認！');
+          break;
+        }
+        const prev = sorted[i - 1];
+        if (!prev.time) continue;
+        const parts = prev.time.split(':').map(Number);
+        let mins = parts[0] * 60 + parts[1];
+        mins += DEFAULT_TRAVEL_MINUTES + DEFAULT_DURATION_MINUTES;
+        const hr = Math.floor(mins / 60);
+        const mn = mins % 60;
+        item.time = String(hr).padStart(2, '0') + ':' + String(mn).padStart(2, '0');
+      }
+    }
+
+    // ==================== 行程渲染 ====================
+    function renderItinerary(){
+      const data=editableItineraryData[currentDay];
+      if(!data)return;
+      autoAdjustTimesWithReservation(currentDay);
+      data.items.sort((a,b)=>{const ta=a.time||'00:00',tb=b.time||'00:00';return ta.localeCompare(tb);});
+      updateFlowText(currentDay);
+      document.getElementById('route-flow').innerText=data.flow;
+      document.getElementById('wakeup-tip').innerHTML=data.wakeup;
+      checkConflicts(data);
+      const container=document.getElementById('itinerary-cards');
+      container.innerHTML='';
+      data.items.forEach((item,idx)=>{
+        const card=document.createElement('div');
+        card.className='cute-card p-5 space-y-3';
+        card.dataset.itemId=item.id;
+        let extra='';
+        // Instagram 按鈕（只有當有 instagram 欄位時才顯示）
+        if(item.instagram)extra+=`<a href="${item.instagram}" target="_blank" class="reservation-btn"><i data-lucide="instagram" class="w-3 h-3"></i> Instagram</a>`;
+        // 預約詳情按鈕（只有當有 screenshot 欄位時才顯示）
+        if(item.screenshot)extra+=`<a href="#" class="reservation-btn" data-screenshot="${item.screenshot}" data-caption="${item.reservationCaption||'預約截圖'}" onclick="event.preventDefault(); showReservation(this.dataset.screenshot, this.dataset.caption);"><i data-lucide="file-text" class="w-3 h-3"></i> 預約詳情</a>`;
+        const editBtns=`<div class="flex gap-1 mt-1"><span class="edit-btn" onclick="openEditModal('${item.id}', ${currentDay})">✏️ 編輯</span></div>`;
+        const td=item.time?`<div class="text-[10px] text-gray-400 font-medium">⏰ ${item.time}</div>`:'';
+        let dh='';if(item.deadline)dh=`<div class="deadline-plain">${item.deadline}</div>`;
+        let sh='';
+        if(item.split){
+          const v=item.split.vivian,s=item.split.suzu;
+          let sg='';
+          if(s.suggestions&&s.suggestions.length>0){
+            const sid='sugg-'+idx;
+            let ih=s.suggestions.map(sg=>`<div class="s-item"><span class="name">${sg.name}</span><a href="https://www.google.com/maps/dir/current+location/${encodeURIComponent(sg.address||'')}" target="_blank">導航 ➜</a></div>`).join('');
+            sg=`<div class="suggest-toggle" onclick="document.getElementById('${sid}').classList.toggle('show')">📍 去邊度好？</div><div class="suggest-list" id="${sid}">${ih}</div>`;
+          }
+          let mu=s.meetup?`<div class="meetup-note">${s.meetup}</div>`:'';
+          sh=`<div class="split-row"><div class="split-col"><div class="label">${v.label}</div><div class="desc">${v.desc}</div><div style="margin-top:4px;"><a href="https://www.google.com/maps/dir/current+location/${encodeURIComponent(v.address||'')}" target="_blank" class="nav-link">🧭 導航</a></div></div><div class="split-col"><div class="label">${s.label}</div><div class="desc">${s.desc}</div>${sg}${mu}</div></div>`;
+        }
+        const navLink = getNavLink(item, data.items, idx);
+        const navLabel = idx === 0 ? '📍 從目前位置出發' : `🚗 從「${data.items[idx-1]?.title || '上一個地點'}」前往`;
+        card.innerHTML=dh+`<div class="flex items-start justify-between gap-2"><div class="flex items-start gap-2"><span class="bg-[#f5b0a0] text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">${idx+1}</span><div><h4 class="font-bold text-gray-800 text-sm">${item.title} ${item.isReservation?'⭐':''}</h4>${td}</div></div>${editBtns}</div><div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs text-gray-600">🚆 ${item.transport}</div><div class="bg-[#fdf0f2] p-3 rounded-xl border border-[#ffe3e8] text-xs text-gray-700">💡 ${item.tips}</div>${sh}${extra?'<div class="flex flex-wrap gap-2 mt-1">'+extra+'</div>':''}<div class="flex justify-between items-center mt-2"><a href="${navLink}" target="_blank" class="nav-link"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>${navLabel}</a><a href="${item.address ? 'https://www.google.com/maps/dir/current+location/'+encodeURIComponent(item.address) : '#'}" target="_blank" class="nav-link"><i data-lucide="navigation" class="w-3.5 h-3.5"></i>目的地</a></div>`;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+      if(!detailVisible){document.getElementById('itinerary-detail').classList.add('hidden');document.getElementById('toggle-icon').innerHTML='<i data-lucide="chevron-down" class="w-4 h-4"></i>';}else{document.getElementById('itinerary-detail').classList.remove('hidden');document.getElementById('toggle-icon').innerHTML='<i data-lucide="chevron-up" class="w-4 h-4"></i>';}lucide.createIcons();
+    }
+
+    // ==================== 衝突檢測 ====================
+    function checkConflicts(data){const el=document.getElementById('conflict-warning');const warnings=[];if(currentDay===1){el.classList.add('hidden');return;}for(let i=0;i<data.items.length;i++){if(data.items[i].isReservation){const before=data.items.slice(0,i).filter(it=>!it.isReservation).length;if(before>4)warnings.push('⚠️ 在「'+data.items[i].title+'」預約前有 '+before+' 個行程，可能時間不足，建議調整');}}if(warnings.length>0){el.classList.remove('hidden');el.innerHTML=warnings.join('<br>');}else{el.classList.add('hidden');}}
+
+    // ==================== 編輯功能 ====================
+    function openEditModal(id,day){editingItemId=id;editingDay=day;const data=editableItineraryData[day],item=data.items.find(i=>i.id===id);if(!item)return;document.getElementById('edit-modal-title').textContent='✏️ 編輯行程';document.getElementById('edit-title').value=item.title||'';document.getElementById('edit-time').value=item.time||'12:00';document.getElementById('edit-is-reservation').value=item.isReservation?'true':'false';document.getElementById('edit-transport').value=item.transport||'';document.getElementById('edit-tips').value=item.tips||'';document.getElementById('edit-address').value=item.address||'';document.getElementById('edit-screenshot').value=item.screenshot||'';document.getElementById('edit-instagram').value=item.instagram||'';document.getElementById('edit-deadline').value=item.deadline||'';document.getElementById('edit-conflict-warning').classList.add('hidden');document.getElementById('manual-fields').classList.remove('show');document.getElementById('edit-delete-btn').style.display='block';document.getElementById('edit-modal').classList.remove('hidden');}
+    function openAddItemModal(){editingItemId=null;editingDay=currentDay;document.getElementById('edit-modal-title').textContent='➕ 新增行程';document.getElementById('edit-title').value='';document.getElementById('edit-time').value='12:00';document.getElementById('edit-is-reservation').value='false';document.getElementById('edit-transport').value='';document.getElementById('edit-tips').value='';document.getElementById('edit-address').value='';document.getElementById('edit-screenshot').value='';document.getElementById('edit-instagram').value='';document.getElementById('edit-deadline').value='';document.getElementById('edit-conflict-warning').classList.add('hidden');document.getElementById('manual-fields').classList.remove('show');document.getElementById('edit-delete-btn').style.display='none';document.getElementById('edit-modal').classList.remove('hidden');}
+    function closeEditModal(){document.getElementById('edit-modal').classList.add('hidden');editingItemId=null;editingItem=null;}
+    function saveEditItem(){const title=document.getElementById('edit-title').value.trim(),time=document.getElementById('edit-time').value||'12:00',isRes=document.getElementById('edit-is-reservation').value==='true';let transport=document.getElementById('edit-transport').value.trim(),tips=document.getElementById('edit-tips').value.trim(),address=document.getElementById('edit-address').value.trim(),screenshot=document.getElementById('edit-screenshot').value.trim(),instagram=document.getElementById('edit-instagram').value.trim(),deadline=document.getElementById('edit-deadline').value.trim(),mf=document.getElementById('manual-fields'),isManual=mf.classList.contains('show');if(isManual){const addr=document.getElementById('edit-manual-address').value.trim(),det=document.getElementById('edit-manual-details').value.trim();if(addr)address=addr;if(det)tips=det;}if(!title){showToast('請輸入行程標題');return;}const data=editableItineraryData[editingDay];if(editingItemId){const item=data.items.find(i=>i.id===editingItemId);if(item){item.title=title;item.time=time;item.isReservation=isRes;item.transport=transport||'步行';item.tips=tips||'💡 請參考導航';item.address=address||'';item.screenshot=screenshot||'';item.instagram=instagram||'';item.deadline=deadline||'';}}else{const newItem={id:'i'+Date.now(),title:title,time:time,isReservation:isRes,transport:transport||'步行',tips:tips||'💡 請參考導航',address:address||'',screenshot:screenshot||'',instagram:instagram||'',deadline:deadline||''};data.items.push(newItem);}data.items.sort((a,b)=>{const ta=a.time||'00:00',tb=b.time||'00:00';return ta.localeCompare(tb);});autoAdjustTimesWithReservation(editingDay);updateFlowText(editingDay);closeEditModal();renderItinerary();checkConflicts(data);showToast('✅ 行程已更新');}
+    function deleteCurrentItem(){if(!editingItemId)return;if(!confirm('確定要刪除此行程嗎？'))return;const data=editableItineraryData[editingDay];data.items=data.items.filter(i=>i.id!==editingItemId);updateFlowText(editingDay);closeEditModal();renderItinerary();checkConflicts(data);showToast('🗑️ 行程已刪除');}
+    function updateFlowText(day){const data=editableItineraryData[day];if(!data)return;const sorted=[...data.items].sort((a,b)=>{const ta=a.time||'00:00',tb=b.time||'00:00';return ta.localeCompare(tb);});data.flow=sorted.map(i=>i.title).join(' ➔ ');}
+
+    // ==================== 預約詳情 ====================
+    function showReservation(imgSrc,caption){const modal=document.getElementById('reservation-modal'),img=document.getElementById('modal-image'),cap=document.getElementById('modal-caption');if(imgSrc){img.src=imgSrc;img.alt=caption||'預約截圖';}else{img.src='';img.alt='暫無預約截圖';}cap.textContent=caption||'預約詳情';modal.classList.remove('hidden');document.body.style.overflow='hidden';}
+    function closeReservation(){document.getElementById('reservation-modal').classList.add('hidden');document.body.style.overflow='auto';}
+
+    // ==================== 分頁切換 ====================
+    function switchTab(tab){['itinerary','billing','rate'].forEach(id=>document.getElementById('sec-'+id).classList.add('hidden'));['tab-itinerary','tab-billing','tab-rate'].forEach(id=>{document.getElementById(id).className="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 text-gray-500 hover:bg-[#fdf0f2] flex flex-col items-center justify-center gap-0.5";});if(tab==='itinerary'){document.getElementById('sec-itinerary').classList.remove('hidden');document.getElementById('tab-itinerary').className="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5";updateWeather(currentDay);updateFlights(currentDay);renderItinerary();}else if(tab==='billing'){document.getElementById('sec-billing').classList.remove('hidden');document.getElementById('tab-billing').className="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5";recalculateBills();}else{document.getElementById('sec-rate').classList.remove('hidden');document.getElementById('tab-rate').className="py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 tab-active flex flex-col items-center justify-center gap-0.5";fetchRealTimeRate();}lucide.createIcons();}
+    function switchDay(day){currentDay=day;for(let d=1;d<=4;d++){const btn=document.getElementById('day-btn-'+d);if(d===day){btn.className="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm day-btn-active";const p1=btn.querySelector('p:first-child'),p2=btn.querySelector('p:last-child');if(p1)p1.className="text-xs text-opacity-80 text-white";if(p2)p2.className="text-xs font-bold mt-0.5 text-white";}else{btn.className="flex-shrink-0 px-4 py-3 rounded-2xl border-2 border-[#ffd9de] bg-white text-center min-w-[90px] transition-all duration-300 shadow-sm";const p1=btn.querySelector('p:first-child'),p2=btn.querySelector('p:last-child');if(p1)p1.className="text-xs text-gray-400";if(p2)p2.className="text-xs font-bold text-gray-600 mt-0.5";}}updateWeather(day);updateFlights(day);renderItinerary();}
+    function toggleDetail(){detailVisible=!detailVisible;const d=document.getElementById('itinerary-detail'),i=document.getElementById('toggle-icon');if(detailVisible){d.classList.remove('hidden');i.innerHTML='<i data-lucide="chevron-up" class="w-4 h-4"></i>';}else{d.classList.add('hidden');i.innerHTML='<i data-lucide="chevron-down" class="w-4 h-4"></i>';}lucide.createIcons();}
+
+    // ==================== 航班顯示 ====================
+    function updateFlights(day){const dep=document.getElementById('flight-depart'),ret=document.getElementById('flight-return'),tip=document.getElementById('departure-tip'),sec=document.getElementById('flight-section');if(day===1){dep.style.display='flex';ret.style.display='none';tip.style.display='block';sec.style.display='block';}else if(day===4){dep.style.display='none';ret.style.display='flex';tip.style.display='none';sec.style.display='block';}else{sec.style.display='none';}}
+
+    // ==================== 記帳功能 ====================
     function toggleSplitUI(){const val=document.getElementById('bill-split-type').value;document.getElementById('split-equal-ui').classList.toggle('hidden',val!=='equal');document.getElementById('split-custom-ui').classList.toggle('hidden',val!=='custom');document.getElementById('split-receipt-ui').classList.toggle('hidden',val!=='receipt');if(val==='receipt')document.getElementById('bill-amount').value=receiptTotal||'';}
     function updateBillCurrencyUI(){document.getElementById('amount-unit').innerText=document.getElementById('bill-currency').value;}
     async function processReceiptImage(file){if(!file)return;const load=document.getElementById('ocr-loading'),list=document.getElementById('receipt-items-list');load.classList.add('show');list.innerHTML='';receiptItems=[];receiptTotal=0;try{const url=URL.createObjectURL(file),result=await Tesseract.recognize(url,'chi_tra+eng+jpn',{logger:m=>console.log(m)}),text=result.data.text;const lines=text.split('\n').filter(l=>l.trim().length>0),items=[];const pricePattern=/(\d+[,.]?\d*)\s*(円|¥|JPY|HKD|\$)/i;for(const line of lines){const trimmed=line.trim(),pm=trimmed.match(pricePattern);if(pm){const priceStr=pm[1].replace(/,/g,''),price=parseFloat(priceStr);if(!isNaN(price)&&price>0){const before=trimmed.substring(0,trimmed.indexOf(pm[0])).trim(),name=before||'商品';let tName=name;const map={'Tシャツ':'T恤','シャツ':'襯衫','パンツ':'褲子','スカート':'裙子','ドレス':'連衣裙','ジャケット':'外套','コート':'大衣','靴':'鞋子','バッグ':'包包','アクセサリー':'飾品','ネックレス':'項鍊','リング':'戒指','イヤリング':'耳環','時計':'手錶','化粧品':'化妝品','リップ':'唇膏','ファンデーション':'粉底','アイシャドウ':'眼影','マスカラ':'睫毛膏','ネイル':'指甲油','お菓子':'零食','チョコレート':'巧克力','クッキー':'餅乾','飲み物':'飲料','コーヒー':'咖啡','紅茶':'紅茶','ケーキ':'蛋糕','パン':'麵包','ラーメン':'拉麵','寿司':'壽司','刺身':'生魚片','天ぷら':'天婦羅'};for(const [jp,zh] of Object.entries(map)){if(name.includes(jp)){tName=name.replace(jp,zh);break;}}items.push({name:tName,price:price,member:'Vivian',checked:true});receiptTotal+=price;}}}if(items.length===0){items.push({name:'單據總額',price:0,member:'Vivian',checked:true});const totalMatch=text.match(/合計|total|計\s*(\d+[,.]?\d*)/i);if(totalMatch){const totalStr=totalMatch[1].replace(/,/g,''),total=parseFloat(totalStr);if(!isNaN(total)&&total>0){items[0].price=total;receiptTotal=total;}}}else{receiptTotal=items.reduce((s,i)=>s+i.price,0);}receiptItems=items;renderReceiptItems();document.getElementById('bill-amount').value=receiptTotal;showToast('✅ 已辨識 '+items.length+' 項商品，總額 ¥'+receiptTotal);}catch(e){console.error('OCR Error:',e);showToast('⚠️ 單據辨識失敗，請手動輸入');}finally{load.classList.remove('show');}}
     function renderReceiptItems(){const list=document.getElementById('receipt-items-list');list.innerHTML='';receiptItems.forEach((item,index)=>{const div=document.createElement('div');div.className='receipt-item';div.innerHTML=`<input type="checkbox" ${item.checked?'checked':''} onchange="receiptItems[${index}].checked=this.checked; updateReceiptTotal()"><span class="item-name">${item.name}</span><span class="item-price">¥${item.price}</span><select class="member-select" onchange="receiptItems[${index}].member=this.value"><option value="Vivian" ${item.member==='Vivian'?'selected':''}>Vivian</option><option value="Suzu" ${item.member==='Suzu'?'selected':''}>Suzu</option></select>`;list.appendChild(div);});}
     function updateReceiptTotal(){const total=receiptItems.filter(i=>i.checked).reduce((s,i)=>s+i.price,0);document.getElementById('bill-amount').value=total;}
-    function applyReceiptItems(){const checked=receiptItems.filter(i=>i.checked);if(checked.length===0){showToast('請至少勾選一項商品');return;}const totals={Vivian:0,Suzu:0};checked.forEach(i=>totals[i.member]+=i.price);document.getElementById('bill-split-type').value='custom';toggleSplitUI();document.getElementById('split-val-vivian').value=totals.Vivian||0;document.getElementById('split-val-suzu').value=totals.Suzu||0;const total=checked.reduce((s,i)=>s+i.price,0);document.getElementById('bill-amount').value=total;showToast('✅ 已套用 '+checked.length+' 項商品');}
+    function applyReceiptItems(){const checked=receiptItems.filter(i=>i.checked);if(checked.length===0){showToast('請至少勾選一項商品');return;}const totals={Vivian:0,Suzu:0};checked.forEach(i=>totals[i.member]+=i.price);document.getElementById('bill-split-type').value='custom';toggleSplitUI();document.getElementById('split-val-vivian').value=totals.Vivian||0;document.getElementById('split-val-suzu').value=totals.Suzu||0;const total=checked.reduce((s,i)=>s+i.price,0);document.getElementById('bill-amount').value=total;showToast('✅ 已套用 '+checked.length+' 項商品，Vivian: ¥'+totals.Vivian+'，Suzu: ¥'+totals.Suzu);}
+    function addBillItem(){const name=document.getElementById('bill-name').value.trim(),amount=parseFloat(document.getElementById('bill-amount').value),currency=document.getElementById('bill-currency').value,payer=document.getElementById('bill-payer').value,splitType=document.getElementById('bill-split-type').value;if(!name){showToast('請輸入項目名稱 💖');return;}if(isNaN(amount)||amount<=0){showToast('請輸入正確金額');return;}let shares={Vivian:false,Suzu:false},customShares={Vivian:0,Suzu:0};if(splitType==='equal'){const sv=document.getElementById('sh-vivian').checked,ss=document.getElementById('sh-suzu').checked;if(!sv&&!ss){showToast('至少選擇一位參與人');return;}shares={Vivian:sv,Suzu:ss};const count=(sv?1:0)+(ss?1:0),per=amount/count;if(sv)customShares.Vivian=per;if(ss)customShares.Suzu=per;}else if(splitType==='custom'){const vv=parseFloat(document.getElementById('split-val-vivian').value)||0,ss=parseFloat(document.getElementById('split-val-suzu').value)||0;if(vv+ss===0){showToast('請填寫分開付款金額');return;}customShares={Vivian:vv,Suzu:ss};shares={Vivian:vv>0,Suzu:ss>0};}else if(splitType==='receipt'){const checked=receiptItems.filter(i=>i.checked);if(checked.length===0){showToast('請先掃描單據並勾選商品');return;}checked.forEach(i=>{customShares[i.member]=(customShares[i.member]||0)+i.price;});shares={Vivian:customShares.Vivian>0,Suzu:customShares.Suzu>0};document.getElementById('bill-amount').value=checked.reduce((s,i)=>s+i.price,0);}const now=new Date(),dateStr=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),hasUncleared=billsList.some(b=>!b.cleared);if(hasUncleared)captureSettlementSnapshot();billsList.push({id:Date.now().toString(),name:name,payer:payer,amount:parseFloat(document.getElementById('bill-amount').value)||amount,currency:currency,splitType:splitType,shares:shares,customShares:customShares,cleared:false,date:dateStr});showToast('✅ 已加入帳目');document.getElementById('bill-name').value='';document.getElementById('bill-amount').value='';document.getElementById('split-val-vivian').value='';document.getElementById('split-val-suzu').value='';receiptItems=[];document.getElementById('receipt-items-list').innerHTML='';recalculateBills();}
+    function captureSettlementSnapshot(){const rate=parseFloat(document.getElementById('settle-rate').value)||currentRate,now=new Date(),timeStr=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');let vPaid=0,sPaid=0,vOwn=0,sOwn=0;const uncleared=billsList.filter(b=>!b.cleared);uncleared.forEach(item=>{const factor=item.currency==='JPY'?1:(1/rate),amt=item.amount*factor;if(item.payer==='Vivian')vPaid+=amt;else sPaid+=amt;vOwn+=item.customShares.Vivian*factor;sOwn+=item.customShares.Suzu*factor;});const vBalance=vPaid-vOwn,sBalance=sPaid-sOwn;let result='';if(uncleared.length===0)result='✨ 全部已結清 ✨';else if(Math.abs(vBalance)<0.1)result='👌 完美平衡！';else if(vBalance<0)result='👉 Vivian 應付 Suzu: ¥'+Math.abs(vBalance).toFixed(0)+' ($'+(Math.abs(vBalance)*rate).toFixed(1)+')';else result='👉 Suzu 應付 Vivian: ¥'+Math.abs(sBalance).toFixed(0)+' ($'+(Math.abs(sBalance)*rate).toFixed(1)+')';settlementHistory.push({time:timeStr,rate:rate,items:uncleared.map(item=>({name:item.name,payer:item.payer,amount:item.amount,currency:item.currency,split:item.splitType==='equal'?'均分':'V:'+item.customShares.Vivian.toFixed(0)+'/S:'+item.customShares.Suzu.toFixed(0)})),vPaid:vPaid,sPaid:sPaid,vOwn:vOwn,sOwn:sOwn,result:result});}
+    function toggleClearItem(id){const item=billsList.find(i=>i.id===id);if(item){item.cleared=!item.cleared;captureSettlementSnapshot();recalculateBills();}}
+    function deleteBillItem(id){captureSettlementSnapshot();billsList=billsList.filter(i=>i.id!==id);recalculateBills();}
+    function recalculateBills(){const rate=parseFloat(document.getElementById('settle-rate').value)||currentRate,container=document.getElementById('bill-items-list');container.innerHTML='';if(billsList.length===0){container.innerHTML='<p class="text-xs text-gray-400 text-center py-6">尚無消費紀錄 📝</p>';}else{billsList.forEach(item=>{const cleared=item.cleared,div=document.createElement('div');div.className='p-3 rounded-xl border border-[#ffd9de] bg-white space-y-1.5 '+(cleared?'opacity-60 bg-gray-50':'');let detail=item.splitType==='equal'?'均分 ('+Object.keys(item.shares).filter(k=>item.shares[k]).join(', ')+')':item.splitType==='receipt'?'單據分帳 (V:'+item.customShares.Vivian.toFixed(0)+'/S:'+item.customShares.Suzu.toFixed(0)+')':'自訂 (V:'+item.customShares.Vivian.toFixed(0)+' / S:'+item.customShares.Suzu.toFixed(0)+')';div.innerHTML='<div class="flex items-center justify-between"><div class="flex items-center gap-2"><input type="checkbox" '+(cleared?'checked':'')+' onchange="toggleClearItem(\''+item.id+'\')" class="accent-[#f5b0a0]"><span class="text-xs font-bold '+(cleared?'line-through text-gray-400':'')+'">'+item.name+'</span></div><button onclick="deleteBillItem(\''+item.id+'\')" class="text-gray-300 hover:text-red-500"><i data-lucide="x" class="w-4 h-4"></i></button></div><div class="flex justify-between text-[10px] text-gray-400 px-6"><span>付款人 <strong class="text-gray-600">'+item.payer+'</strong> ('+item.currency+' '+item.amount+')</span><span>'+detail+'</span></div><div class="text-[9px] text-gray-300 text-right">'+item.date+' '+(cleared?'🔒 已結清':'⏳ 待結')+'</div>';container.appendChild(div);});}lucide.createIcons();document.getElementById('bill-count').innerText='共 '+billsList.length+' 筆';let vPaid=0,sPaid=0,vOwn=0,sOwn=0;billsList.forEach(item=>{if(item.cleared)return;const factor=item.currency==='JPY'?1:(1/rate),amt=item.amount*factor;if(item.payer==='Vivian')vPaid+=amt;else sPaid+=amt;vOwn+=item.customShares.Vivian*factor;sOwn+=item.customShares.Suzu*factor;});document.getElementById('total-paid-vivian').innerText='¥'+vPaid.toFixed(0)+' / $'+(vPaid*rate).toFixed(1);document.getElementById('total-paid-suzu').innerText='¥'+sPaid.toFixed(0)+' / $'+(sPaid*rate).toFixed(1);document.getElementById('total-own-vivian').innerText='¥'+vOwn.toFixed(0)+' / $'+(vOwn*rate).toFixed(1);document.getElementById('total-own-suzu').innerText='¥'+sOwn.toFixed(0)+' / $'+(sOwn*rate).toFixed(1);const vBalance=vPaid-vOwn,sBalance=sPaid-sOwn,res=document.getElementById('settlement-result');if(billsList.filter(i=>!i.cleared).length===0){res.innerHTML='<p class="text-sm font-bold text-gray-400">✨ 全部已結清 ✨</p>';}else if(Math.abs(vBalance)<0.1){res.innerHTML='<p class="text-[#e48070] font-bold">👌 完美平衡！</p>';}else if(vBalance<0){const owe=Math.abs(vBalance);res.innerHTML='<div class="text-[#e48070] font-bold text-lg">👉 Vivian 應付 Suzu</div><div class="text-2xl font-black text-[#e48070]">¥'+owe.toFixed(0)+' <span class="text-sm text-gray-400">或</span> $'+(owe*rate).toFixed(1)+'</div>';}else{const owe=Math.abs(sBalance);res.innerHTML='<div class="text-[#e48070] font-bold text-lg">👉 Suzu 應付 Vivian</div><div class="text-2xl font-black text-[#e48070]">¥'+owe.toFixed(0)+' <span class="text-sm text-gray-400">或</span> $'+(owe*rate).toFixed(1)+'</div>';}}
+    function clearAllBills(){if(confirm('清空所有記帳？')){captureSettlementSnapshot();billsList=[];recalculateBills();showToast('已清空 🧹');}}
 
-    // 加入帳單 (修改版：加入儲存)
-    function addBillItem(){
-      const name=document.getElementById('bill-name').value.trim(),amount=parseFloat(document.getElementById('bill-amount').value),currency=document.getElementById('bill-currency').value,payer=document.getElementById('bill-payer').value,splitType=document.getElementById('bill-split-type').value;
-      if(!name){showToast('請輸入項目名稱 💖');return;}
-      if(isNaN(amount)||amount<=0){showToast('請輸入正確金額');return;}
-      let shares={Vivian:false,Suzu:false},customShares={Vivian:0,Suzu:0};
-      if(splitType==='equal'){const sv=document.getElementById('sh-vivian').checked,ss=document.getElementById('sh-suzu').checked;if(!sv&&!ss){showToast('至少選擇一位參與人');return;}shares={Vivian:sv,Suzu:ss};const count=(sv?1:0)+(ss?1:0),per=amount/count;if(sv)customShares.Vivian=per;if(ss)customShares.Suzu=per;}
-      else if(splitType==='custom'){const vv=parseFloat(document.getElementById('split-val-vivian').value)||0,ss=parseFloat(document.getElementById('split-val-suzu').value)||0;if(vv+ss===0){showToast('請填寫分開付款金額');return;}customShares={Vivian:vv,Suzu:ss};shares={Vivian:vv>0,Suzu:ss>0};}
-      else if(splitType==='receipt'){const checked=receiptItems.filter(i=>i.checked);if(checked.length===0){showToast('請先掃描單據並勾選商品');return;}checked.forEach(i=>{customShares[i.member]=(customShares[i.member]||0)+i.price;});shares={Vivian:customShares.Vivian>0,Suzu:customShares.Suzu>0};document.getElementById('bill-amount').value=checked.reduce((s,i)=>s+i.price,0);}
-      const now=new Date(),dateStr=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-      const hasUncleared=billsList.some(b=>!b.cleared);
-      if(hasUncleared) captureSettlementSnapshot();
-      billsList.push({id:Date.now().toString(),name:name,payer:payer,amount:parseFloat(document.getElementById('bill-amount').value)||amount,currency:currency,splitType:splitType,shares:shares,customShares:customShares,cleared:false,date:dateStr});
-      // 儲存到 localStorage
-      saveBillsData();
-      showToast('✅ 已加入帳目');
-      document.getElementById('bill-name').value='';
-      document.getElementById('bill-amount').value='';
-      document.getElementById('split-val-vivian').value='';
-      document.getElementById('split-val-suzu').value='';
-      receiptItems=[];document.getElementById('receipt-items-list').innerHTML='';
-      recalculateBills();
-    }
-
-    function captureSettlementSnapshot(){const rate=parseFloat(document.getElementById('settle-rate').value)||currentRate,now=new Date(),timeStr=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');let vPaid=0,sPaid=0,vOwn=0,sOwn=0;const uncleared=billsList.filter(b=>!b.cleared);uncleared.forEach(item=>{const factor=item.currency==='JPY'?1:(1/rate),amt=item.amount*factor;if(item.payer==='Vivian')vPaid+=amt;else sPaid+=amt;vOwn+=item.customShares.Vivian*factor;sOwn+=item.customShares.Suzu*factor;});const vBalance=vPaid-vOwn,sBalance=sPaid-sOwn;let result='';if(uncleared.length===0)result='✨ 全部已結清 ✨';else if(Math.abs(vBalance)<0.1)result='👌 完美平衡！';else if(vBalance<0)result='👉 Vivian 應付 Suzu: ¥'+Math.abs(vBalance).toFixed(0)+' ($'+(Math.abs(vBalance)*rate).toFixed(1)+')';else result='👉 Suzu 應付 Vivian: ¥'+Math.abs(sBalance).toFixed(0)+' ($'+(Math.abs(sBalance)*rate).toFixed(1)+')';settlementHistory.push({time:timeStr,rate:rate,items:uncleared.map(item=>({name:item.name,payer:item.payer,amount:item.amount,currency:item.currency,split:item.splitType==='equal'?'均分':'V:'+item.customShares.Vivian.toFixed(0)+'/S:'+item.customShares.Suzu.toFixed(0)})),vPaid:vPaid,sPaid:sPaid,vOwn:vOwn,sOwn:sOwn,result:result});saveBillsData();}
-
-    function toggleClearItem(id){const item=billsList.find(i=>i.id===id);if(item){item.cleared=!item.cleared;captureSettlementSnapshot();recalculateBills();saveBillsData();}}
-    function deleteBillItem(id){captureSettlementSnapshot();billsList=billsList.filter(i=>i.id!==id);recalculateBills();saveBillsData();}
-    function clearAllBills(){if(confirm('清空所有記帳？')){captureSettlementSnapshot();billsList=[];recalculateBills();saveBillsData();showToast('已清空 🧹');}}
-
-    function recalculateBills(){const rate=parseFloat(document.getElementById('settle-rate').value)||currentRate,container=document.getElementById('bill-items-list');container.innerHTML='';if(billsList.length===0){container.innerHTML='<p class="text-xs text-gray-400 text-center py-6">尚無消費紀錄 📝</p>';}else{billsList.forEach(item=>{const cleared=item.cleared,div=document.createElement('div');div.className='p-3 rounded-xl border border-[#ffd9de] bg-white space-y-1.5 '+(cleared?'opacity-60 bg-gray-50':'');let detail=item.splitType==='equal'?'均分 ('+Object.keys(item.shares).filter(k=>item.shares[k]).join(', ')+')':item.splitType==='receipt'?'單據分帳':'自訂 (V:'+item.customShares.Vivian.toFixed(0)+' / S:'+item.customShares.Suzu.toFixed(0)+')';div.innerHTML='<div class="flex items-center justify-between"><div class="flex items-center gap-2"><input type="checkbox" '+(cleared?'checked':'')+' onchange="toggleClearItem(\''+item.id+'\')" class="accent-[#f5b0a0]"><span class="text-xs font-bold '+(cleared?'line-through text-gray-400':'')+'">'+item.name+'</span></div><button onclick="deleteBillItem(\''+item.id+'\')" class="text-gray-300 hover:text-red-500"><i data-lucide="x" class="w-4 h-4"></i></button></div><div class="flex justify-between text-[10px] text-gray-400 px-6"><span>付款人 <strong class="text-gray-600">'+item.payer+'</strong> ('+item.currency+' '+item.amount+')</span><span>'+detail+'</span></div><div class="text-[9px] text-gray-300 text-right">'+item.date+' '+(cleared?'🔒 已結清':'⏳ 待結')+'</div>';container.appendChild(div);});}lucide.createIcons();document.getElementById('bill-count').innerText='共 '+billsList.length+' 筆';let vPaid=0,sPaid=0,vOwn=0,sOwn=0;billsList.forEach(item=>{if(item.cleared)return;const factor=item.currency==='JPY'?1:(1/rate),amt=item.amount*factor;if(item.payer==='Vivian')vPaid+=amt;else sPaid+=amt;vOwn+=item.customShares.Vivian*factor;sOwn+=item.customShares.Suzu*factor;});document.getElementById('total-paid-vivian').innerText='¥'+vPaid.toFixed(0)+' / $'+(vPaid*rate).toFixed(1);document.getElementById('total-paid-suzu').innerText='¥'+sPaid.toFixed(0)+' / $'+(sPaid*rate).toFixed(1);document.getElementById('total-own-vivian').innerText='¥'+vOwn.toFixed(0)+' / $'+(vOwn*rate).toFixed(1);document.getElementById('total-own-suzu').innerText='¥'+sOwn.toFixed(0)+' / $'+(sOwn*rate).toFixed(1);const vBalance=vPaid-vOwn,sBalance=sPaid-sOwn,res=document.getElementById('settlement-result');if(billsList.filter(i=>!i.cleared).length===0){res.innerHTML='<p class="text-sm font-bold text-gray-400">✨ 全部已結清 ✨</p>';}else if(Math.abs(vBalance)<0.1){res.innerHTML='<p class="text-[#e48070] font-bold">👌 完美平衡！</p>';}else if(vBalance<0){const owe=Math.abs(vBalance);res.innerHTML='<div class="text-[#e48070] font-bold text-lg">👉 Vivian 應付 Suzu</div><div class="text-2xl font-black text-[#e48070]">¥'+owe.toFixed(0)+' <span class="text-sm text-gray-400">或</span> $'+(owe*rate).toFixed(1)+'</div>';}else{const owe=Math.abs(sBalance);res.innerHTML='<div class="text-[#e48070] font-bold text-lg">👉 Suzu 應付 Vivian</div><div class="text-2xl font-black text-[#e48070]">¥'+owe.toFixed(0)+' <span class="text-sm text-gray-400">或</span> $'+(owe*rate).toFixed(1)+'</div>';}}
-
-    // ==================== 匯出功能 (保持原樣) ====================
+    // ==================== 匯出功能 (文字版 + 圖片版) ====================
     function exportAsImage(mode) {
       const rate = parseFloat(document.getElementById('settle-rate').value) || currentRate;
       const now = new Date();
       const dateStr = now.toLocaleString('zh-HK', { hour12: false });
+      
       if (mode === 'text') {
+        // 文字版匯出
         let text = '✨ 東京推活之旅 · 結帳對帳單 ✨\n';
-        text += '日期: ' + dateStr + '\n匯率: 1 JPY = ' + rate + ' HKD\n-------------------------------------------\n';
-        const uncleared = billsList.filter(b => !b.cleared);
-        if (uncleared.length === 0) { text += '✨ 目前無未結清項目\n'; } else { uncleared.forEach((item, i) => { const splitInfo = item.splitType === 'equal' ? '均分' : 'V:' + item.customShares.Vivian.toFixed(0) + ' / S:' + item.customShares.Suzu.toFixed(0); text += (i+1) + '. ' + item.name + ' (' + item.payer + ' · ' + splitInfo + ')\n   ' + item.currency + ' ' + item.amount + '\n'; }); }
+        text += '日期: ' + dateStr + '\n';
+        text += '匯率: 1 JPY = ' + rate + ' HKD\n';
         text += '-------------------------------------------\n';
-        let vPaid=0,sPaid=0,vOwn=0,sOwn=0; uncleared.forEach(item => { const f = item.currency === 'JPY' ? 1 : (1/rate); const a = item.amount * f; if (item.payer === 'Vivian') vPaid += a; else sPaid += a; vOwn += item.customShares.Vivian * f; sOwn += item.customShares.Suzu * f; });
+        const uncleared = billsList.filter(b => !b.cleared);
+        if (uncleared.length === 0) {
+          text += '✨ 目前無未結清項目\n';
+        } else {
+          uncleared.forEach((item, i) => {
+            const splitInfo = item.splitType === 'equal' ? '均分' : 'V:' + item.customShares.Vivian.toFixed(0) + ' / S:' + item.customShares.Suzu.toFixed(0);
+            text += (i+1) + '. ' + item.name + ' (' + item.payer + ' · ' + splitInfo + ')\n';
+            text += '   ' + item.currency + ' ' + item.amount + '\n';
+          });
+        }
+        text += '-------------------------------------------\n';
+        let vPaid=0,sPaid=0,vOwn=0,sOwn=0;
+        uncleared.forEach(item => {
+          const f = item.currency === 'JPY' ? 1 : (1/rate);
+          const a = item.amount * f;
+          if (item.payer === 'Vivian') vPaid += a;
+          else sPaid += a;
+          vOwn += item.customShares.Vivian * f;
+          sOwn += item.customShares.Suzu * f;
+        });
         const vb = vPaid - vOwn, sb = sPaid - sOwn;
         if (uncleared.length === 0) text += '✨ 全部已結清 ✨\n';
         else if (Math.abs(vb) < 0.1) text += '👌 完美平衡！\n';
@@ -309,14 +619,35 @@
         showToast('📤 文字明細已複製到剪貼簿');
         return;
       }
-      // 圖片匯出 (與原代碼相同，省略細節以節省篇幅)
+      
+      // 圖片版匯出 (直版手機閱讀)
       const container = document.getElementById('export-container');
       document.getElementById('export-date').textContent = '日期: ' + dateStr + '  |  匯率: 1 JPY = ' + rate + ' HKD';
+      
       const uncleared = billsList.filter(b => !b.cleared);
       const itemsHtml = document.getElementById('export-items-list');
       itemsHtml.innerHTML = '';
-      if (uncleared.length === 0) { itemsHtml.innerHTML = '<div style="text-align:center;color:#aaa;padding:12px 0;">✨ 目前無未結清項目</div>'; } else { uncleared.forEach(item => { const div = document.createElement('div'); div.className = 'export-item'; const splitInfo = item.splitType === 'equal' ? '均分' : 'V:' + item.customShares.Vivian.toFixed(0) + ' / S:' + item.customShares.Suzu.toFixed(0); div.innerHTML = '<span class="left">' + item.name + ' (' + item.payer + ' · ' + splitInfo + ')</span><span class="right">' + item.currency + ' ' + item.amount + '</span>'; itemsHtml.appendChild(div); }); }
-      let vPaid=0,sPaid=0,vOwn=0,sOwn=0; uncleared.forEach(item => { const f = item.currency === 'JPY' ? 1 : (1/rate); const a = item.amount * f; if (item.payer === 'Vivian') vPaid += a; else sPaid += a; vOwn += item.customShares.Vivian * f; sOwn += item.customShares.Suzu * f; });
+      if (uncleared.length === 0) {
+        itemsHtml.innerHTML = '<div style="text-align:center;color:#aaa;padding:12px 0;">✨ 目前無未結清項目</div>';
+      } else {
+        uncleared.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'export-item';
+          const splitInfo = item.splitType === 'equal' ? '均分' : 'V:' + item.customShares.Vivian.toFixed(0) + ' / S:' + item.customShares.Suzu.toFixed(0);
+          div.innerHTML = '<span class="left">' + item.name + ' (' + item.payer + ' · ' + splitInfo + ')</span><span class="right">' + item.currency + ' ' + item.amount + '</span>';
+          itemsHtml.appendChild(div);
+        });
+      }
+      
+      let vPaid=0,sPaid=0,vOwn=0,sOwn=0;
+      uncleared.forEach(item => {
+        const f = item.currency === 'JPY' ? 1 : (1/rate);
+        const a = item.amount * f;
+        if (item.payer === 'Vivian') vPaid += a;
+        else sPaid += a;
+        vOwn += item.customShares.Vivian * f;
+        sOwn += item.customShares.Suzu * f;
+      });
       const vb = vPaid - vOwn, sb = sPaid - sOwn;
       let totalText = '';
       if (uncleared.length === 0) totalText = '✨ 全部已結清 ✨';
@@ -324,39 +655,61 @@
       else if (vb < 0) totalText = '👉 Vivian 應付 Suzu: ¥' + Math.abs(vb).toFixed(0) + ' ($' + (Math.abs(vb)*rate).toFixed(1) + ')';
       else totalText = '👉 Suzu 應付 Vivian: ¥' + Math.abs(sb).toFixed(0) + ' ($' + (Math.abs(sb)*rate).toFixed(1) + ')';
       document.getElementById('export-total-text').textContent = totalText;
+      
       const historyList = document.getElementById('export-history-list');
       historyList.innerHTML = '';
-      if (settlementHistory.length === 0) { historyList.innerHTML = '<div style="text-align:center;color:#ccc;padding:6px 0;font-size:11px;">尚無歷史結算記錄</div>'; } else { const recent = [...settlementHistory].reverse().slice(0, 10); recent.forEach(record => { const div = document.createElement('div'); div.className = 'export-history-item'; div.innerHTML = '<span>' + record.time + '</span><span>' + record.result + '</span>'; historyList.appendChild(div); }); if (settlementHistory.length > 10) { const more = document.createElement('div'); more.className = 'export-history-item'; more.style.color = '#bbb'; more.style.fontStyle = 'italic'; more.innerHTML = '<span>... 還有 ' + (settlementHistory.length - 10) + ' 筆記錄</span>'; historyList.appendChild(more); } }
-      container.style.width = '380px'; container.style.padding = '20px 16px';
-      html2canvas(container, { scale: 2, backgroundColor: '#ffffff', allowTaint: false, useCORS: true, logging: false, width: 380, height: container.scrollHeight }).then(canvas => { const link = document.createElement('a'); link.download = '東京推活帳單_' + now.getFullYear() + '_' + String(now.getMonth()+1).padStart(2,'0') + '_' + String(now.getDate()).padStart(2,'0') + '.png'; link.href = canvas.toDataURL('image/png'); link.click(); showToast('📸 圖片已匯出'); container.style.width = '600px'; container.style.padding = '30px 25px'; }).catch(err => { console.error(err); showToast('⚠️ 圖片匯出失敗，請重試'); container.style.width = '600px'; container.style.padding = '30px 25px'; });
+      if (settlementHistory.length === 0) {
+        historyList.innerHTML = '<div style="text-align:center;color:#ccc;padding:6px 0;font-size:11px;">尚無歷史結算記錄</div>';
+      } else {
+        const recent = [...settlementHistory].reverse().slice(0, 10);
+        recent.forEach(record => {
+          const div = document.createElement('div');
+          div.className = 'export-history-item';
+          div.innerHTML = '<span>' + record.time + '</span><span>' + record.result + '</span>';
+          historyList.appendChild(div);
+        });
+        if (settlementHistory.length > 10) {
+          const more = document.createElement('div');
+          more.className = 'export-history-item';
+          more.style.color = '#bbb';
+          more.style.fontStyle = 'italic';
+          more.innerHTML = '<span>... 還有 ' + (settlementHistory.length - 10) + ' 筆記錄</span>';
+          historyList.appendChild(more);
+        }
+      }
+      
+      // 設定直版寬度（手機閱讀優化）
+      container.style.width = '380px';
+      container.style.padding = '20px 16px';
+      
+      html2canvas(container, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        allowTaint: false,
+        useCORS: true,
+        logging: false,
+        width: 380,
+        height: container.scrollHeight
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = '東京推活帳單_' + now.getFullYear() + '_' + String(now.getMonth()+1).padStart(2,'0') + '_' + String(now.getDate()).padStart(2,'0') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('📸 圖片已匯出');
+        // 恢復寬度
+        container.style.width = '600px';
+        container.style.padding = '30px 25px';
+      }).catch(err => {
+        console.error(err);
+        showToast('⚠️ 圖片匯出失敗，請重試');
+        container.style.width = '600px';
+        container.style.padding = '30px 25px';
+      });
     }
 
     function showToast(msg){const t=document.getElementById('toast');t.innerText=msg;t.className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-100";setTimeout(()=>{t.className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none";},2500);}
     function convertCurrency(dir){const rate=currentRate;if(dir==='jpy'){const jpy=parseFloat(document.getElementById('calc-jpy').value)||0;document.getElementById('calc-hkd').value=(jpy*rate).toFixed(2);}else{const hkd=parseFloat(document.getElementById('calc-hkd').value)||0;document.getElementById('calc-jpy').value=(hkd/rate).toFixed(0);}}
-
-    // ==================== 頁面初始化 ====================
-    window.onload = function() {
-      // 載入記帳數據
-      loadBillsData();
-      
-      lucide.createIcons();
-      fetchRealTimeRate();
-      // 行程表相關初始化 (保持原樣)
-      // 此處省略行程表詳細初始化，但保留基本
-      document.getElementById('itinerary-detail').classList.add('hidden');
-      toggleSplitUI();
-      
-      // 重新計算並顯示記帳
-      recalculateBills();
-      
-      // 設定匯率輸入框
-      document.getElementById('settle-rate').value = currentRate;
-      
-      // 顯示 toast 提示
-      if (billsList.length > 0) {
-        showToast('💾 已載入 ' + billsList.length + ' 筆記帳紀錄');
-      }
-    };
+    window.onload=function(){lucide.createIcons();fetchRealTimeRate();updateWeather(1);updateFlights(1);switchDay(1);recalculateBills();detailVisible=false;document.getElementById('itinerary-detail').classList.add('hidden');document.getElementById('toggle-icon').innerHTML='<i data-lucide="chevron-down" class="w-4 h-4"></i>';toggleSplitUI();loadBoardingPassFromStorage();lucide.createIcons();};
   </script>
 </body>
 </html>
